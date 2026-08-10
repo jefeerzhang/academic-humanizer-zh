@@ -33,6 +33,36 @@ claim tied to its evidence. The job is to (1) strip the AI *tells* without casua
 the discipline a general humanizer misses: **every claim earns its number, figure, or citation, and no
 verb is stronger than its evidence.**
 
+## Language routing and the C0–C7 contract
+
+This skill is language-aware. Detect the dominant language of the editable prose and route:
+
+- **CJK ratio `r = CJK tokens / (CJK tokens + Latin word tokens)`**. When **`r ≥ 0.5`** (majority
+  Chinese), load `references/rules-zh.md` and apply its Chinese-specific local-style layer (C7) on top
+  of Layers 1–6. When `r < 0.5`, use the English layers only.
+- The same shared contract binds every language. SKILL.md owns C0–C6; `references/rules-zh.md` adds C7
+  for Chinese.
+
+**The C0–C7 contract (never violated):**
+
+- **C0 — Numbers, equations, p-values, statistics, citations are sacred.** Never invent, drop, or alter
+  a number, equation, citation, sample size, date, or place. Preserve every cite key.
+- **C1 — Claims are not deleted, merged, or altered.** Same structure and content; rewrite only the
+  surface (claim↔evidence matching stays in Layer 4 / 6.5).
+- **C2 — Terminology and named methods stay verbatim.** Formal definitions, method/metric names,
+  technical terms, symbols.
+- **C3 — Preserve legitimate scholarly constructs** (evidence-tied hedging, passive voice, "we"/"本研究",
+  semicolons). See Layer 3.
+- **C4 — Claim↔evidence discipline.** Every claim earns its number/figure/citation; no verb stronger than
+  its evidence (Layer 4; proposals: claim↔feasibility, Layer 6.5).
+- **C5 — Voice and venue matching** (Layer 5).
+- **C6 — Funding-proposal mode** when the text is a grant proposal (Layer 6).
+- **C7 — Chinese local-style fixes**, loaded from `references/rules-zh.md` when `r ≥ 0.5`: 套话
+  开头/过渡/收尾, 价值判断词饱和, 抽象主语, 名词化动词, 排比三件套, 假客观元评论, 句式冗余 —
+  subject to the same red lines in C0–C2.
+
+Layers 1–6 are language-agnostic and apply to all text; C7 adds the Chinese-specific patterns on top.
+
 ## Process
 1. **Read** the manuscript and any author writing sample; note the document type (paper vs. funding
    proposal) and the target venue or funding agency. For proposals, also apply Layer 6 and preserve
