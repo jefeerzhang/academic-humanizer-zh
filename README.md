@@ -67,6 +67,10 @@ This fork adds Chinese academic writing support on top of the upstream `AIScient
   notation, references, project numbers).
 - **`examples/before-after-zh-academic.md`** — a submission-grade before/after using a real Chinese
   social-science abstract, with each edit mapped to a specific rule.
+- **`examples/before-after-tri-research-report-zh.md`** — a real-world before/after on a
+  `tri-research` deep-research report (30 references, 30 inline `[N]` citations, 7 fixed sections),
+  demonstrating that the C0–C2 red lines (references / citations / structure / numbers untouched)
+  hold on structured research reports, not just paper abstracts.
 
 Routing rule (from the upstream `SKILL.md`):
 
