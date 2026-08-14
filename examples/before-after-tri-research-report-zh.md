@@ -8,6 +8,7 @@ Companion to references/rules-zh.md and examples/before-after-zh-academic.md.
 > 用途：演示 academic-humanizer-zh 应用于一份真实的、已通过 `validate_report.py` 的中文深度研究报告。
 > 源材料：`DEEP_RESEARCH_双重差分法_2026-08-14.md`（tri-research 产出，30 条参考文献）。
 > 过程：按 SKILL.md C0–C7 契约 + `references/rules-zh.md` 中文层执行；只改正文 prose，不改结构。
+> 注：本示例仅覆盖「去 AI 味」这一步的 prose 修改；报告随后又独立补充了「核心模型与估计量公式」附录（LaTeX 数学渲染），与本示例的 before/after 无关。
 
 ---
 
