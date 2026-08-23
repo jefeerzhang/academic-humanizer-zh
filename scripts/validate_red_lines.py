@@ -1,0 +1,353 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+validate_red_lines.py — Academic Humanizer C0–C2 red-line auditor.
+
+Given a before / after pair (files or stdin), assert that the editing pass did NOT
+violate the contract:
+
+  C0  Numbers, p-values, statistics, citations, equations, dates, places
+      are sacred. Never invent, drop, or alter.
+  C1  Claims are not deleted, merged, or altered.
+  C2  Terminology and named methods / metrics stay verbatim.
+
+Usage:
+    # Two files:
+    python3 scripts/validate_red_lines.py before.md after.md
+
+    # One combined markdown with "## Before" and "## After" sections:
+    python3 scripts/validate_red_lines.py --combined examples/before-after-zh-academic.md
+
+    # Two text blobs via stdin (separated by line "<<<AFTER>>>"):
+    python3 scripts/validate_red_lines.py -
+
+Exit codes:
+    0  PASS  — all red lines preserved
+    1  WARN  — some warnings, no hard fails
+    2  FAIL  — at least one red line violated
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import re
+import sys
+from dataclasses import dataclass, field, asdict
+from pathlib import Path
+from typing import Iterable
+
+
+# ---------------------------------------------------------------------------
+# Extractors: each returns a sorted list of (match, value, line_no) tuples.
+# ---------------------------------------------------------------------------
+
+# Numbers: integers, decimals, percentages, scientific notation, ranges "2–6%"
+NUM_RE = re.compile(
+    r"(?<![A-Za-z\u4e00-\u9fff])"           # not preceded by letter / CJK
+    r"(\d{1,3}(?:,\d{3})*(?:\.\d+)?|\d+\.\d+|\d+)"  # the number
+    r"(?:%|\s*[–—\-]\s*\d+%)?"           # optional percent or range
+    r"(?![A-Za-z])"
+)
+
+# p-values and statistics
+PVAL_RE = re.compile(
+    r"\*?p\*?\s*[<≤>]\s*0?\.\d+|"
+    r"\bn\s*=\s*\d+|"
+    r"\b(?:t|F|chi-square|χ²|χ2|r|R²|R\^2)\s*=\s*[\d.]+|"
+    r"\bCI\s*[=:]|"
+    r"\bAUROC\s*=\s*[\d.]+",
+    re.IGNORECASE,
+)
+
+# Inline citations:
+#   numeric: [1], [12], [1-3], [1, 2, 5]
+#   author-year in parens: (Smith, 2020), (Smith et al., 2019)
+#   author-year as sentence clause: Smith (2020), Smith et al. (2019)
+_AUTHOR = r"[A-Z][A-Za-zÀ-ſ'\-]+"
+CITE_RE = re.compile(
+    r"\[\d+(?:\s*[,–-]\s*\d+)*\]"
+    r"|(?:^|\s)\(" + _AUTHOR + r"(?:\s+et\s+al\.?)?\s*,\s*\d{4}[a-z]?\)"
+    r"|(?:^|\s)" + _AUTHOR + r"(?:\s+et\s+al\.?)?\s*\(\d{4}[a-z]?\)",
+)
+
+# Math / equations: $...$, $$...$$, \( \), \[ \], \begin{...}
+MATH_RE = re.compile(
+    r"\$\$.+?\$\$|"           # $$...$$
+    r"\$.+?\$|"                 # $...$
+    r"\\\(.+?\\\)|"         # \(...\)
+    r"\\\[.+?\\\]|"         # \[…\]
+    r"\\begin\{[a-zA-Z*]+\}.+?\\end\{[a-zA-Z*]+\}",
+    re.DOTALL,
+)
+
+# Dates: "2023年8月", "August 2023", "2023-08", "2023/8/15"
+DATE_RE = re.compile(
+    r"\d{4}\s*年\s*\d{1,2}\s*月(?:\s*\d{1,2}\s*日?)?|"  # 2023 年 8 月
+    r"\d{4}\s*[\-\/]\s*\d{1,2}(?:\s*[\-\/]\s*\d{1,2})?|"  # 2023-08 / 2023-08-15
+    r"(?:January|February|March|April|May|June|July|August|"
+    r"September|October|November|December)\s+\d{1,2},?\s*\d{4}|"
+    r"\b\d{4}\b",
+)
+
+# Named methods / metrics (extend as your field needs). Lowercased match.
+NAMED_TERMS = [
+    "discrete choice experiment", "discrete choice model",
+    "conditional logit", "mixed logit", "latent class", "latent class model",
+    "auroc", "auprc", "rmse", "mae", "mse",
+    "t-test", "t test", "paired test",
+    "ols", "wls", "gls", "did", "twfe", "psm", "iv", "rd", "rdid",
+    "resnet", "vit", "bert", "gpt", "llm",
+    "选择实验", "离散选择", "条件 logit", "混合 logit", "潜在类别",
+    "双重差分", "倾向得分匹配",
+]
+
+
+def extract_numbers(text: str) -> list[str]:
+    return [m.group(0).replace(" ", "") for m in NUM_RE.finditer(text)]
+
+
+def extract_pvals(text: str) -> list[str]:
+    return [re.sub(r"\s+", " ", m.group(0)).strip() for m in PVAL_RE.finditer(text)]
+
+
+def extract_citations(text: str) -> list[str]:
+    out = []
+    for m in CITE_RE.finditer(text):
+        out.append(re.sub(r"\s+", " ", m.group(0)).strip())
+    return out
+
+
+def extract_math(text: str) -> list[str]:
+    return [re.sub(r"\s+", " ", m.group(0)).strip() for m in MATH_RE.finditer(text)]
+
+
+def extract_dates(text: str) -> list[str]:
+    return [re.sub(r"\s+", "", m.group(0)) for m in DATE_RE.finditer(text)]
+
+
+def extract_named_terms(text: str) -> list[str]:
+    lower = text.lower()
+    found = []
+    for term in NAMED_TERMS:
+        if term.lower() in lower:
+            found.append(term)
+    return found
+
+
+def extract_paragraphs(text: str) -> list[str]:
+    return [p.strip() for p in re.split(r"\n\s*\n", text) if p.strip()]
+
+
+def extract_sentences(text: str) -> list[str]:
+    # Chinese + English sentence terminator
+    parts = re.split(r"(?<=[。！？!?\.])\s+", text)
+    return [p.strip() for p in parts if p.strip() and len(p.strip()) > 3]
+
+
+# ---------------------------------------------------------------------------
+# Diff audit
+# ---------------------------------------------------------------------------
+
+@dataclass
+class Finding:
+    rule: str
+    severity: str   # "fail" | "warn" | "info"
+    message: str
+    detail: dict = field(default_factory=dict)
+
+
+def compare(before: str, after: str) -> list[Finding]:
+    findings: list[Finding] = []
+
+    # ----- C0.1 Numbers -----
+    before_nums = sorted(extract_numbers(before))
+    after_nums = sorted(extract_numbers(after))
+    missing_nums = [n for n in before_nums if n not in after_nums]
+    if missing_nums:
+        findings.append(Finding(
+            "C0.1 numbers", "fail",
+            f"{len(missing_nums)} number(s) from before are missing or altered in after.",
+            {"missing": missing_nums[:20], "missing_count": len(missing_nums)},
+        ))
+    # Suspicious: new numbers in after that weren't in before
+    new_nums = [n for n in after_nums if n not in before_nums]
+    # Filter trivial: dates and 4-digit year-only numbers are checked separately
+    real_new = []
+    for n in new_nums:
+        if re.fullmatch(r"\d{4}", n):            # year
+            continue
+        if re.fullmatch(r"0?\.\d+", n):         # p-value-ish (e.g. .05, 0.05)
+            continue
+        if re.fullmatch(r"\d{1,2}", n):          # tiny integers likely from table row numbers
+            continue
+        real_new.append(n)
+    if real_new:
+        findings.append(Finding(
+            "C0.1 numbers (new)", "warn",
+            f"{len(real_new)} new number(s) appeared in after — verify not hallucinated.",
+            {"new": real_new[:20], "new_count": len(real_new)},
+        ))
+
+    # ----- C0.2 p-values / statistics -----
+    before_p = sorted(extract_pvals(before))
+    after_p = sorted(extract_pvals(after))
+    missing_p = [p for p in before_p if p not in after_p]
+    if missing_p:
+        findings.append(Finding(
+            "C0.2 stats", "fail",
+            f"{len(missing_p)} statistical expression(s) lost or altered.",
+            {"missing": missing_p},
+        ))
+
+    # ----- C0.3 Citations -----
+    before_cites = sorted(extract_citations(before))
+    after_cites = sorted(extract_citations(after))
+    missing_cites = [c for c in before_cites if c not in after_cites]
+    if missing_cites:
+        findings.append(Finding(
+            "C0.3 citations", "fail",
+            f"{len(missing_cites)} citation(s) lost or altered.",
+            {"missing": missing_cites[:30], "missing_count": len(missing_cites)},
+        ))
+
+    # ----- C0.4 Math / equations -----
+    before_math = sorted(extract_math(before))
+    after_math = sorted(extract_math(after))
+    missing_math = [m for m in before_math if m not in after_math]
+    if missing_math:
+        findings.append(Finding(
+            "C0.4 math", "fail",
+            f"{len(missing_math)} equation(s) / math environment(s) lost or altered.",
+            {"missing_count": len(missing_math)},
+        ))
+
+    # ----- C0.5 Dates -----
+    before_dates = sorted(extract_dates(before))
+    after_dates = sorted(extract_dates(after))
+    missing_dates = [d for d in before_dates if d not in after_dates]
+    # Filter trivial year-only matches that often appear in citations
+    real_missing_dates = [d for d in missing_dates if not re.fullmatch(r"\d{4}", d)]
+    if real_missing_dates:
+        findings.append(Finding(
+            "C0.5 dates", "warn",
+            f"{len(real_missing_dates)} date(s) lost or altered.",
+            {"missing": real_missing_dates[:20]},
+        ))
+
+    # ----- C1 Structure -----
+    bp, ap = len(extract_paragraphs(before)), len(extract_paragraphs(after))
+    if abs(bp - ap) > max(1, bp * 0.2):
+        findings.append(Finding(
+            "C1 paragraphs", "warn",
+            f"Paragraph count drifted: before={bp}, after={ap}.",
+            {"before": bp, "after": ap},
+        ))
+    bs, as_ = len(extract_sentences(before)), len(extract_sentences(after))
+    if bs > 0 and abs(bs - as_) > max(2, bs * 0.25):
+        findings.append(Finding(
+            "C1 sentences", "warn",
+            f"Sentence count drifted >25%: before={bs}, after={as_}.",
+            {"before": bs, "after": as_},
+        ))
+
+    # ----- C2 Named methods / metrics -----
+    before_terms = sorted(set(extract_named_terms(before)))
+    after_terms = sorted(set(extract_named_terms(after)))
+    missing_terms = [t for t in before_terms if t not in after_terms]
+    if missing_terms:
+        findings.append(Finding(
+            "C2 named terms", "fail",
+            f"{len(missing_terms)} named method(s) / metric(s) lost or paraphrased.",
+            {"missing": missing_terms},
+        ))
+
+    if not findings:
+        findings.append(Finding(
+            "summary", "info",
+            "All red lines preserved (C0 numbers, C0 stats, C0 cites, "
+            "C0 math, C0 dates, C1 structure, C2 named terms).",
+        ))
+    return findings
+
+
+# ---------------------------------------------------------------------------
+# I/O helpers
+# ---------------------------------------------------------------------------
+
+def split_combined(text: str) -> tuple[str, str]:
+    """Find the first '## Before' and the next '## After' heading; treat only the
+    span from Before up to (but excluding) After as before, and the After span
+    up to the NEXT '## ' heading as after.
+
+    This strips any frontmatter and any meta sections (场景假设 / 修改对照 /
+    合规清单 / 总结 etc.) so the audit compares only the editable prose.
+    """
+    # Stdin literal marker always wins
+    if "<<<AFTER>>>" in text:
+        before, after = text.split("<<<AFTER>>>", 1)
+        return before.strip(), after.strip()
+
+    bm = re.search(r"^##\s+Before\b", text, flags=re.MULTILINE)
+    am = re.search(r"^##\s+After\b", text, flags=re.MULTILINE)
+    if not (bm and am and bm.start() < am.start()):
+        raise ValueError(
+            "Could not find both '## Before' and '## After' headings. "
+            "Use --before/--after, or separate stdin with a line "
+            "containing '<<<AFTER>>>'."
+        )
+
+    before = text[bm.start(): am.start()]
+    before = re.sub(r"^##\s+Before.*$", "", before, count=1, flags=re.MULTILINE).strip()
+
+    next_h = re.search(r"^##\s+", text[am.end():], flags=re.MULTILINE)
+    after_end = am.end() + next_h.start() if next_h else len(text)
+    after = text[am.start(): after_end]
+    after = re.sub(r"^##\s+After.*$", "", after, count=1, flags=re.MULTILINE).strip()
+
+    return before, after
+
+
+def main() -> int:
+    p = argparse.ArgumentParser(description=__doc__.splitlines()[1])
+    p.add_argument("combined", nargs="?", help="Single file with ## Before / ## After")
+    p.add_argument("--before", help="Before text file")
+    p.add_argument("--after", help="After text file")
+    p.add_argument("--json", action="store_true", help="Emit JSON instead of human report")
+    p.add_argument("--quiet", action="store_true", help="Suppress info-level findings in human mode")
+    args = p.parse_args()
+
+    if args.before and args.after:
+        before = Path(args.before).read_text(encoding="utf-8")
+        after = Path(args.after).read_text(encoding="utf-8")
+    elif args.combined == "-":
+        text = sys.stdin.read()
+        before, after = split_combined(text)
+    elif args.combined:
+        text = Path(args.combined).read_text(encoding="utf-8")
+        before, after = split_combined(text)
+    else:
+        p.error("Provide a combined file, or --before / --after pair.")
+
+    findings = compare(before, after)
+
+    if args.json:
+        print(json.dumps([asdict(f) for f in findings], ensure_ascii=False, indent=2))
+    else:
+        for f in findings:
+            if args.quiet and f.severity == "info":
+                continue
+            tag = {"fail": "❌ FAIL", "warn": "⚠️  WARN", "info": "✅ INFO"}.get(f.severity, f.severity)
+            print(f"[{tag}] {f.rule}: {f.message}")
+            if f.detail:
+                detail = {k: v for k, v in f.detail.items() if v}
+                if detail:
+                    print(f"        {json.dumps(detail, ensure_ascii=False)}")
+
+    has_fail = any(f.severity == "fail" for f in findings)
+    has_warn = any(f.severity == "warn" for f in findings)
+    return 2 if has_fail else (1 if has_warn else 0)
+
+
+if __name__ == "__main__":
+    sys.exit(main())

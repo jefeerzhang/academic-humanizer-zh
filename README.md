@@ -68,6 +68,9 @@ example, an NIH Specific Aims page, and a funded NSF CAREER summary.
   spends most of the effort on the first pages, since that's what reviewers score.
 - **Returns a diff and an unchanged-claim declaration**, so the author can verify that no number,
   citation, or claim was altered.
+- **Has an executable red-line auditor** (`scripts/validate_red_lines.py`) that mechanically checks
+  C0–C2 (numbers, statistics, citations, math, dates, structure, named terms) on a before / after
+  pair and exits with code 0 / 1 / 2 for CI integration. See `scripts/README.md`.
 
 ## 中文扩展（Chinese Academic Extension）
 
@@ -123,6 +126,9 @@ It is a plain `SKILL.md` plus examples, so it also runs as a skill or system pro
 │   ├── before-after.md               # English (paper, NIH Aims, NSF CAREER)
 │   ├── before-after-zh-academic.md   # Chinese social-science abstract
 │   └── before-after-tri-research-report-zh.md  # Real tri-research report (30 cites)
+├── scripts/
+│   ├── validate_red_lines.py         # C0-C2 mechanical auditor (CI-friendly exit codes)
+│   └── README.md                     # how to use the auditor
 └── assets/                           # README banners
 ```
 

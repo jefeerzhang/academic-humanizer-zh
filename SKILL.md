@@ -231,5 +231,10 @@ Return, in this order:
    size, date, place, or named method / metric was altered. If any of those *had* to
    change for a reason, list it explicitly with the reason.
 
+   For an **executable** check of C0–C2 (numbers, stats, citations, math, dates,
+   structure, named terms), run `scripts/validate_red_lines.py` on the before /
+   after pair. Exit code 0 = pass; 1 = warnings; 2 = red-line violation. See
+   `scripts/README.md` for details.
+
 If the author only asked for a "show me the diff" version, return the diff + change log
 without rewriting inline.
