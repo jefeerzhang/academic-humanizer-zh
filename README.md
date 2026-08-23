@@ -1,13 +1,12 @@
-<div align="center">
+# Academic Humanizer (Chinese Fork)
 
-<img src="assets/banner.svg" alt="Academic Humanizer: personalized editing for AI-assisted academic drafts, keeping your voice and every claim, number, and citation intact" width="860">
+> A thin fork of [AIScientists-Dev/academic-humanizer](https://github.com/AIScientists-Dev/academic-humanizer)
+> that adds Chinese academic-writing rules and structural fixes.
 
 [![license](https://img.shields.io/badge/license-MIT-2f8f57?style=flat-square)](LICENSE)
-&nbsp;![version](https://img.shields.io/badge/version-0.3.3-2f8f57?style=flat-square)
+&nbsp;![version](https://img.shields.io/badge/version-0.4.0-2f8f57?style=flat-square)
 &nbsp;![skill](https://img.shields.io/badge/skill-papers_and_grant_proposals-1c1a15?style=flat-square)
 &nbsp;![built by](https://img.shields.io/badge/built_by-NSF,_CAREER,_NIH_R01-555?style=flat-square)
-
-</div>
 
 ## Why we built this
 
@@ -56,15 +55,30 @@ example, an NIH Specific Aims page, and a funded NSF CAREER summary.
 
 ---
 
+## What it does
+
+- **Sharpens clarity and voice:** trims generic AI phrasing ("paves the way", "extensive experiments",
+  "to the best of our knowledge", "In recent years...", delve/underscore/tapestry, rule-of-three, very
+  long sentences, em-dashes) and brings the draft closer to the author's own style.
+- **Keeps claims tied to evidence:** no verb stronger than the data (`prove` → `show empirically`),
+  and vague magnitudes become attributed ranges.
+- **Leaves real scholarship alone:** evidence-tied hedging, passive voice where it fits, `we`,
+  definitions, symbols, and every citation. It doesn't change a number or a reference.
+- **Has a separate mode for grant proposals (NSF, NIH):** it keeps the vision a paper would trim, and
+  spends most of the effort on the first pages, since that's what reviewers score.
+- **Returns a diff and an unchanged-claim declaration**, so the author can verify that no number,
+  citation, or claim was altered.
+
 ## 中文扩展（Chinese Academic Extension）
 
 This fork adds Chinese academic writing support on top of the upstream `AIScientists-Dev/academic-humanizer`:
 
-- **`references/rules-zh.md`** — Chinese-language local rules. Routes automatically when CJK tokens
-  make up ≥ 50% of the editable prose. Covers six typical AI-tells (套话开头/过渡/收尾、价值判断词
-  饱和、抽象主语、名词化动词、排比三件套、假中立元评论) and explicitly protects academic
-  conventions that must not be changed (passive voice, "本研究/本文", long attributives, statistical
-  notation, references, project numbers).
+- **`references/rules-zh.md`** — Chinese-language local rules. Routes automatically when the editable
+  prose is **structured as continuous Chinese paragraphs** (not just by raw CJK ratio, to avoid
+  mis-routing an English manuscript with a Chinese abstract). Covers six typical AI-tells (套话开头/
+  过渡/收尾、价值判断词饱和、抽象主语、名词化动词、排比三件套、假中立元评论) and explicitly
+  protects academic conventions that must not be changed (passive voice, "本研究/本文", long
+  attributives, statistical notation, references, project numbers).
 - **`examples/before-after-zh-academic.md`** — a submission-grade before/after using a real Chinese
   social-science abstract, with each edit mapped to a specific rule.
 - **`examples/before-after-tri-research-report-zh.md`** — a real-world before/after on a
@@ -72,30 +86,16 @@ This fork adds Chinese academic writing support on top of the upstream `AIScient
   demonstrating that the C0–C2 red lines (references / citations / structure / numbers untouched)
   hold on structured research reports, not just paper abstracts.
 
-Routing rule (from the upstream `SKILL.md`):
-
-> `r = CJK tokens / (CJK tokens + Latin word tokens)`
-> `r ≥ 0.5` → load `references/rules-zh.md`
-> `r < 0.5` → use upstream English rules
-
-The English rules and contracts (C0–C7) in `SKILL.md` are unchanged.
+The English rules and contracts (C0–C7) in `SKILL.md` are unchanged. Layer 2 and Layer 6 were moved
+out of `SKILL.md` into `references/layers/` so the main skill file stays under ~230 lines and the
+agent can load the heavy catalogs on demand.
 
 ---
-
-## What it does
-
-- **Sharpens clarity and voice:** trims generic AI phrasing ("paves the way", "extensive experiments", "to the best of our knowledge", "In recent years...", delve/underscore/tapestry, rule-of-three, very long sentences, em-dashes) and brings the draft closer to the author's own style.
-- **Keeps claims tied to evidence:** no verb stronger than the data (`prove` → `show empirically`), and
-  vague magnitudes become attributed ranges.
-- **Leaves real scholarship alone:** evidence-tied hedging, passive voice where it fits, `we`,
-  definitions, symbols, and every citation. It doesn't change a number or a reference.
-- **Has a separate mode for grant proposals (NSF, NIH):** it keeps the vision a paper would trim, and
-  spends most of the effort on the first pages, since that's what reviewers score.
 
 ## Install
 
 ```bash
-git clone https://github.com/AIScientists-Dev/academic-humanizer ~/.claude/skills/academic-humanizer
+git clone https://github.com/jefeerzhang/academic-humanizer-zh ~/.claude/skills/academic-humanizer-zh
 ```
 
 It is a plain `SKILL.md` plus examples, so it also runs as a skill or system prompt for **Codex** and
@@ -109,6 +109,23 @@ It is a plain `SKILL.md` plus examples, so it also runs as a skill or system pro
 # optionally: "match my voice from prior_paper.pdf; target venue: ICLR"
 ```
 
+## Repository layout
+
+```
+.
+├── SKILL.md                          # Core contract + Layers 1, 3, 4, 5 (≈230 lines)
+├── references/
+│   ├── rules-zh.md                   # C7 Chinese local rules (load on routing)
+│   └── layers/
+│       ├── layer-2-academic-tells.md # 2.1–2.11 detailed catalog
+│       └── layer-6-proposals.md      # NSF / NIH structure + claim↔feasibility
+├── examples/
+│   ├── before-after.md               # English (paper, NIH Aims, NSF CAREER)
+│   ├── before-after-zh-academic.md   # Chinese social-science abstract
+│   └── before-after-tri-research-report-zh.md  # Real tri-research report (30 cites)
+└── assets/                           # README banners
+```
+
 ## Make it yours
 
 The rules here reflect one group's voice. Fork the repo and adapt them to your own: point it at a few of
@@ -120,6 +137,14 @@ personalized, not a one-size-fits-all filter.
 Six layers: general AI-tell catalog → academic-specific tells → preserve scholarly conventions →
 claim↔evidence matching → voice/venue calibration → funding-proposal mode (NSF/NIH structure,
 first-page primacy, claim↔feasibility). The audit→rewrite loop is defined in [`SKILL.md`](SKILL.md).
+A short Chinese-ruleset (C7) is layered on top when the editable prose is continuous Chinese. Heavy
+catalogs (Layer 2, Layer 6) live under `references/layers/` and load on demand.
+
+## Document-type fallbacks
+
+If the input is a `.bib` / `.bbl`, a `.tex` mostly equations, a rebuttal letter, a cover letter,
+or non-academic text, the skill **does not edit**. It reports what it saw and why it fell back, so
+the author can re-route to the right tool.
 
 ## References
 

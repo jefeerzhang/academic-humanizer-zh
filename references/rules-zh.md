@@ -1,7 +1,11 @@
 <!--
 Chinese academic writing rules (本地风格修复层)。
 Fork extension of AIScientists-Dev/academic-humanizer; upstream contract (C0–C7) lives in SKILL.md.
-This file is loaded by the router in SKILL.md when editable prose is majority Chinese (r ≥ 0.5).
+This file is loaded by the router in SKILL.md when the editable prose is continuous Chinese
+paragraphs in a Chinese-language venue (raw CJK ratio is NOT enough — see SKILL.md "Language
+routing and the C0–C7 contract" for the full rule).
+
+Layer 2 (2.1–2.11) and Layer 6 (NSF / NIH) live in references/layers/ and load on demand.
 -->
 
 # Rules · 中文（学术写作）
