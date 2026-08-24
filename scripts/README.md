@@ -55,6 +55,15 @@ Stdin, two blobs separated by <<<AFTER>>>:
 - 0  All red lines preserved.
 - 1  Only WARN-level findings (e.g. structure drift, new dates). Human review recommended.
 - 2  One or more FAIL findings (numbers, stats, citations, math, or named terms lost).
+- 3  Unexpected crash (e.g. unreadable input) — never conflated with WARN.
+
+### Regression tests
+
+    python scripts/test_validate_red_lines.py
+
+Covers the known failure modes: duplicated numbers halved, Chinese full-width
+citations（李聪（2021）/ （李聪，2021）), citation reflow vs swap, and
+Chinese sentence-merge drift.
 
 ### Smoke test
 

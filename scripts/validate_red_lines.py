@@ -33,9 +33,16 @@ import argparse
 import json
 import re
 import sys
+from collections import Counter
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
 from typing import Iterable
+
+# Windows consoles often default to a legacy codepage (e.g. GBK / cp936) that
+# cannot encode the FAIL/WARN tags. Force UTF-8 so output never crashes.
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        _stream.reconfigure(encoding="utf-8", errors="replace")
 
 
 # ---------------------------------------------------------------------------
@@ -64,11 +71,15 @@ PVAL_RE = re.compile(
 #   numeric: [1], [12], [1-3], [1, 2, 5]
 #   author-year in parens: (Smith, 2020), (Smith et al., 2019)
 #   author-year as sentence clause: Smith (2020), Smith et al. (2019)
+#   Chinese full-width forms: 李聪（2021）指出 / （李聪，2021）/ （李聪等，2021）
 _AUTHOR = r"[A-Z][A-Za-zÀ-ſ'\-]+"
+_CN_AUTHOR = r"[\u4e00-\u9fff]{2,4}"
 CITE_RE = re.compile(
     r"\[\d+(?:\s*[,–-]\s*\d+)*\]"
     r"|(?:^|\s)\(" + _AUTHOR + r"(?:\s+et\s+al\.?)?\s*,\s*\d{4}[a-z]?\)"
-    r"|(?:^|\s)" + _AUTHOR + r"(?:\s+et\s+al\.?)?\s*\(\d{4}[a-z]?\)",
+    r"|(?:^|\s)" + _AUTHOR + r"(?:\s+et\s+al\.?)?\s*\(\d{4}[a-z]?\)"
+    r"|" + _CN_AUTHOR + r"[（(]\d{4}[a-z]?[）)]"
+    r"|[（(]" + _CN_AUTHOR + r"(?:等)?(?:\s*et\s+al\.?)?\s*[，,]\s*\d{4}[a-z]?[）)]",
 )
 
 # Math / equations: $...$, $$...$$, \( \), \[ \], \begin{...}
@@ -114,7 +125,24 @@ def extract_pvals(text: str) -> list[str]:
 def extract_citations(text: str) -> list[str]:
     out = []
     for m in CITE_RE.finditer(text):
-        out.append(re.sub(r"\s+", " ", m.group(0)).strip())
+        c = re.sub(r"\s+", " ", m.group(0)).strip()
+        # Prose glues onto the front of a Chinese author-year clause ("正如
+        # 李聪（2021）"), so the raw matched name is unstable. Canonicalize to
+        # the last two CJK chars before the paren plus the year span.
+        cm = re.match(r"([\u4e00-\u9fff]+)[（(](\d{4}[a-z]?)[）)]$", c)
+        if cm:
+            c = f"{cm.group(1)[-2:]}（{cm.group(2)}）"
+        else:
+            # Canonicalize English author-year citations to name+year so a
+            # parenthetical -> narrative reflow ("(Smith et al., 2019)" ->
+            # "Smith et al. (2019)") is not reported as an alteration.
+            em = re.match(
+                r"\(?([A-Z][A-Za-zÀ-ſ'\-]+(?:\s+et\s+al\.?)?)\s*,?\s*\(?(\d{4}[a-z]?)\)?$",
+                c,
+            )
+            if em:
+                c = f"{em.group(1).lower().replace(' ', '').rstrip('.')}|{em.group(2)}"
+        out.append(c)
     return out
 
 
@@ -140,9 +168,19 @@ def extract_paragraphs(text: str) -> list[str]:
 
 
 def extract_sentences(text: str) -> list[str]:
-    # Chinese + English sentence terminator
-    parts = re.split(r"(?<=[。！？!?\.])\s+", text)
+    # Chinese terminators split regardless of following whitespace; Chinese
+    # prose has no space after 。 English keeps the ". " convention.
+    parts = re.split(r"(?<=[。！？!?])|(?<=[^\s。]\.)\s+", text)
     return [p.strip() for p in parts if p.strip() and len(p.strip()) > 3]
+
+
+def _missing(before: list[str], after: list[str]) -> list[str]:
+    """Multiset difference: elements of before whose count exceeds after.
+
+    Membership checks miss duplicated items being halved (before has two
+    occurrences of a number/citation, after only one) — Counter catches them.
+    """
+    return sorted((Counter(before) - Counter(after)).elements())
 
 
 # ---------------------------------------------------------------------------
@@ -163,7 +201,7 @@ def compare(before: str, after: str) -> list[Finding]:
     # ----- C0.1 Numbers -----
     before_nums = sorted(extract_numbers(before))
     after_nums = sorted(extract_numbers(after))
-    missing_nums = [n for n in before_nums if n not in after_nums]
+    missing_nums = _missing(before_nums, after_nums)
     if missing_nums:
         findings.append(Finding(
             "C0.1 numbers", "fail",
@@ -192,7 +230,7 @@ def compare(before: str, after: str) -> list[Finding]:
     # ----- C0.2 p-values / statistics -----
     before_p = sorted(extract_pvals(before))
     after_p = sorted(extract_pvals(after))
-    missing_p = [p for p in before_p if p not in after_p]
+    missing_p = _missing(before_p, after_p)
     if missing_p:
         findings.append(Finding(
             "C0.2 stats", "fail",
@@ -203,7 +241,7 @@ def compare(before: str, after: str) -> list[Finding]:
     # ----- C0.3 Citations -----
     before_cites = sorted(extract_citations(before))
     after_cites = sorted(extract_citations(after))
-    missing_cites = [c for c in before_cites if c not in after_cites]
+    missing_cites = _missing(before_cites, after_cites)
     if missing_cites:
         findings.append(Finding(
             "C0.3 citations", "fail",
@@ -214,7 +252,7 @@ def compare(before: str, after: str) -> list[Finding]:
     # ----- C0.4 Math / equations -----
     before_math = sorted(extract_math(before))
     after_math = sorted(extract_math(after))
-    missing_math = [m for m in before_math if m not in after_math]
+    missing_math = _missing(before_math, after_math)
     if missing_math:
         findings.append(Finding(
             "C0.4 math", "fail",
@@ -225,7 +263,7 @@ def compare(before: str, after: str) -> list[Finding]:
     # ----- C0.5 Dates -----
     before_dates = sorted(extract_dates(before))
     after_dates = sorted(extract_dates(after))
-    missing_dates = [d for d in before_dates if d not in after_dates]
+    missing_dates = _missing(before_dates, after_dates)
     # Filter trivial year-only matches that often appear in citations
     real_missing_dates = [d for d in missing_dates if not re.fullmatch(r"\d{4}", d)]
     if real_missing_dates:
@@ -350,4 +388,8 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    try:
+        sys.exit(main())
+    except Exception as exc:  # crash must never masquerade as exit 0/1/2
+        print(f"validate_red_lines: unexpected crash: {exc}", file=sys.stderr)
+        sys.exit(3)
