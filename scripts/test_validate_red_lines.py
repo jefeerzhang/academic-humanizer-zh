@@ -8,7 +8,14 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 
-from validate_red_lines import compare, extract_sentences
+from validate_red_lines import (
+    FeatureSet,
+    canonicalize_citation,
+    compare,
+    compare_texts,
+    extract_features,
+    extract_sentences,
+)
 
 
 def rules(findings):
@@ -21,7 +28,7 @@ def severity_of(findings, rule):
 
 class TestRedLines(unittest.TestCase):
     def audit(self, before, after):
-        return compare(before, after)
+        return compare_texts(before, after)
 
     # Bug 1: GBK console must not crash on emoji tags (covered by stdout
     # reconfigure at import time; here we just assert import worked).
@@ -80,6 +87,32 @@ class TestRedLines(unittest.TestCase):
     def test_clean_pass_is_info_only(self):
         findings = self.audit("样本量 n = 100。", "样本量 n = 100。")
         self.assertTrue(all(f.severity == "info" for f in findings))
+
+
+class TestExtractionSeam(unittest.TestCase):
+    """The FeatureSet interface is the test surface: extraction is asserted
+    directly, without going through the diff."""
+
+    def test_features_preserve_duplicates(self):
+        fs = extract_features("A recruited 692 students. B recruited 692 again.")
+        self.assertEqual(fs.numbers.count("692"), 2)
+
+    def test_chinese_citation_canonicalizes_prose_prefix(self):
+        self.assertEqual(canonicalize_citation("正如李聪（2021）"), "李聪（2021）")
+
+    def test_english_citation_canonicalizes_reflow(self):
+        paren = canonicalize_citation("(Smith et al., 2019)")
+        narrative = canonicalize_citation("Smith et al. (2019)")
+        self.assertEqual(paren, narrative)
+
+    def test_numeric_citation_passes_through(self):
+        self.assertEqual(canonicalize_citation("[1-3]"), "[1-3]")
+
+    def test_feature_set_is_pure_data(self):
+        fs = extract_features("样本量 n = 100，见 Smith (2020)。")
+        self.assertIsInstance(fs, FeatureSet)
+        self.assertEqual(fs.citations, ["smith|2020"])
+        self.assertIn("n = 100", fs.stats)
 
 
 if __name__ == "__main__":

@@ -122,28 +122,32 @@ def extract_pvals(text: str) -> list[str]:
     return [re.sub(r"\s+", " ", m.group(0)).strip() for m in PVAL_RE.finditer(text)]
 
 
+def canonicalize_citation(raw: str) -> str:
+    """Collapse surface variation of one citation to a stable key.
+
+    Two failure modes this absorbs (both were real bugs):
+    - Prose glues onto the front of a Chinese author-year clause ("正如
+      李聪（2021）"), so the raw matched name is unstable. Canonicalize to
+      the last two CJK chars before the paren plus the year span.
+    - A parenthetical -> narrative reflow ("(Smith et al., 2019)" ->
+      "Smith et al. (2019)") is legitimate editing, not an alteration, so
+      English author-year citations collapse to "name|year".
+    """
+    c = re.sub(r"\s+", " ", raw).strip()
+    cm = re.match(r"([\u4e00-\u9fff]+)[（(](\d{4}[a-z]?)[）)]$", c)
+    if cm:
+        return f"{cm.group(1)[-2:]}（{cm.group(2)}）"
+    em = re.match(
+        r"\(?([A-Z][A-Za-zÀ-ſ'\-]+(?:\s+et\s+al\.?)?)\s*,?\s*\(?(\d{4}[a-z]?)\)?$",
+        c,
+    )
+    if em:
+        return f"{em.group(1).lower().replace(' ', '').rstrip('.')}|{em.group(2)}"
+    return c
+
+
 def extract_citations(text: str) -> list[str]:
-    out = []
-    for m in CITE_RE.finditer(text):
-        c = re.sub(r"\s+", " ", m.group(0)).strip()
-        # Prose glues onto the front of a Chinese author-year clause ("正如
-        # 李聪（2021）"), so the raw matched name is unstable. Canonicalize to
-        # the last two CJK chars before the paren plus the year span.
-        cm = re.match(r"([\u4e00-\u9fff]+)[（(](\d{4}[a-z]?)[）)]$", c)
-        if cm:
-            c = f"{cm.group(1)[-2:]}（{cm.group(2)}）"
-        else:
-            # Canonicalize English author-year citations to name+year so a
-            # parenthetical -> narrative reflow ("(Smith et al., 2019)" ->
-            # "Smith et al. (2019)") is not reported as an alteration.
-            em = re.match(
-                r"\(?([A-Z][A-Za-zÀ-ſ'\-]+(?:\s+et\s+al\.?)?)\s*,?\s*\(?(\d{4}[a-z]?)\)?$",
-                c,
-            )
-            if em:
-                c = f"{em.group(1).lower().replace(' ', '').rstrip('.')}|{em.group(2)}"
-        out.append(c)
-    return out
+    return [canonicalize_citation(m.group(0)) for m in CITE_RE.finditer(text)]
 
 
 def extract_math(text: str) -> list[str]:
@@ -184,6 +188,36 @@ def _missing(before: list[str], after: list[str]) -> list[str]:
 
 
 # ---------------------------------------------------------------------------
+# Feature extraction: text -> FeatureSet. All regex / normalization knowledge
+# lives behind this seam; compare() consumes FeatureSets and never sees raw text.
+# ---------------------------------------------------------------------------
+
+@dataclass
+class FeatureSet:
+    numbers: list[str]
+    stats: list[str]
+    citations: list[str]
+    math: list[str]
+    dates: list[str]
+    terms: list[str]
+    paragraphs: int
+    sentences: int
+
+
+def extract_features(text: str) -> FeatureSet:
+    return FeatureSet(
+        numbers=sorted(extract_numbers(text)),
+        stats=sorted(extract_pvals(text)),
+        citations=sorted(extract_citations(text)),
+        math=sorted(extract_math(text)),
+        dates=sorted(extract_dates(text)),
+        terms=sorted(set(extract_named_terms(text))),
+        paragraphs=len(extract_paragraphs(text)),
+        sentences=len(extract_sentences(text)),
+    )
+
+
+# ---------------------------------------------------------------------------
 # Diff audit
 # ---------------------------------------------------------------------------
 
@@ -195,12 +229,13 @@ class Finding:
     detail: dict = field(default_factory=dict)
 
 
-def compare(before: str, after: str) -> list[Finding]:
+def compare(before: FeatureSet, after: FeatureSet) -> list[Finding]:
+    """Pure diff of two FeatureSets — no regex, no text access."""
     findings: list[Finding] = []
 
     # ----- C0.1 Numbers -----
-    before_nums = sorted(extract_numbers(before))
-    after_nums = sorted(extract_numbers(after))
+    before_nums = before.numbers
+    after_nums = after.numbers
     missing_nums = _missing(before_nums, after_nums)
     if missing_nums:
         findings.append(Finding(
@@ -228,9 +263,7 @@ def compare(before: str, after: str) -> list[Finding]:
         ))
 
     # ----- C0.2 p-values / statistics -----
-    before_p = sorted(extract_pvals(before))
-    after_p = sorted(extract_pvals(after))
-    missing_p = _missing(before_p, after_p)
+    missing_p = _missing(before.stats, after.stats)
     if missing_p:
         findings.append(Finding(
             "C0.2 stats", "fail",
@@ -239,9 +272,7 @@ def compare(before: str, after: str) -> list[Finding]:
         ))
 
     # ----- C0.3 Citations -----
-    before_cites = sorted(extract_citations(before))
-    after_cites = sorted(extract_citations(after))
-    missing_cites = _missing(before_cites, after_cites)
+    missing_cites = _missing(before.citations, after.citations)
     if missing_cites:
         findings.append(Finding(
             "C0.3 citations", "fail",
@@ -250,9 +281,7 @@ def compare(before: str, after: str) -> list[Finding]:
         ))
 
     # ----- C0.4 Math / equations -----
-    before_math = sorted(extract_math(before))
-    after_math = sorted(extract_math(after))
-    missing_math = _missing(before_math, after_math)
+    missing_math = _missing(before.math, after.math)
     if missing_math:
         findings.append(Finding(
             "C0.4 math", "fail",
@@ -261,9 +290,7 @@ def compare(before: str, after: str) -> list[Finding]:
         ))
 
     # ----- C0.5 Dates -----
-    before_dates = sorted(extract_dates(before))
-    after_dates = sorted(extract_dates(after))
-    missing_dates = _missing(before_dates, after_dates)
+    missing_dates = _missing(before.dates, after.dates)
     # Filter trivial year-only matches that often appear in citations
     real_missing_dates = [d for d in missing_dates if not re.fullmatch(r"\d{4}", d)]
     if real_missing_dates:
@@ -274,14 +301,14 @@ def compare(before: str, after: str) -> list[Finding]:
         ))
 
     # ----- C1 Structure -----
-    bp, ap = len(extract_paragraphs(before)), len(extract_paragraphs(after))
+    bp, ap = before.paragraphs, after.paragraphs
     if abs(bp - ap) > max(1, bp * 0.2):
         findings.append(Finding(
             "C1 paragraphs", "warn",
             f"Paragraph count drifted: before={bp}, after={ap}.",
             {"before": bp, "after": ap},
         ))
-    bs, as_ = len(extract_sentences(before)), len(extract_sentences(after))
+    bs, as_ = before.sentences, after.sentences
     if bs > 0 and abs(bs - as_) > max(2, bs * 0.25):
         findings.append(Finding(
             "C1 sentences", "warn",
@@ -290,9 +317,7 @@ def compare(before: str, after: str) -> list[Finding]:
         ))
 
     # ----- C2 Named methods / metrics -----
-    before_terms = sorted(set(extract_named_terms(before)))
-    after_terms = sorted(set(extract_named_terms(after)))
-    missing_terms = [t for t in before_terms if t not in after_terms]
+    missing_terms = [t for t in before.terms if t not in after.terms]
     if missing_terms:
         findings.append(Finding(
             "C2 named terms", "fail",
@@ -307,6 +332,11 @@ def compare(before: str, after: str) -> list[Finding]:
             "C0 math, C0 dates, C1 structure, C2 named terms).",
         ))
     return findings
+
+
+def compare_texts(before: str, after: str) -> list[Finding]:
+    """Convenience path text -> features -> diff, for CLI and tests."""
+    return compare(extract_features(before), extract_features(after))
 
 
 # ---------------------------------------------------------------------------
@@ -367,7 +397,7 @@ def main() -> int:
     else:
         p.error("Provide a combined file, or --before / --after pair.")
 
-    findings = compare(before, after)
+    findings = compare_texts(before, after)
 
     if args.json:
         print(json.dumps([asdict(f) for f in findings], ensure_ascii=False, indent=2))
