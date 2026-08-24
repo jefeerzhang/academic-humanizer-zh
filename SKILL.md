@@ -49,7 +49,9 @@ casualizing, and (2) enforce the discipline a general humanizer misses:
 2. **Audit** (do not edit yet): list each detected pattern with its location and proposed
    fix, and each empirical claim's evidence status.
 3. **Rewrite**: same structure and content, all claims and citations preserved, tells
-   removed, over-claims matched to evidence, legitimate hedging kept.
+   removed, over-claims matched to evidence, legitimate hedging kept. Before rewriting,
+   read `examples/before-after-zh-academic.md` to calibrate edit strength and output
+   format (English prose: `examples/before-after.md`).
 4. **Report**: cleaned text plus a short change log + a **diff** + an **unchanged-claim
    declaration**. Cover everything the original covered.
 
@@ -120,11 +122,10 @@ pivotal role.*
 
 ## Layer 2: Academic AI tells (full catalog → reference)
 
-Load `references/layers/layer-2-academic-tells.md` for the 11 specific patterns
-(over-claiming verbs, significance hype, empty intensifiers, novelty padding, formulaic
-openers, connective overuse, contribution-list clichés, citation dumping, hedging-by-
-vagueness, boilerplate emphasis, overlong sentences). The contract is the same as the
-inline Layer 1 catalog: detect → match the rule → rewrite without changing evidence.
+Load `references/layers/layer-2-academic-tells.md` for the 11 academic-specific
+patterns — the highest-frequency are over-claiming verbs and overlong, clause-stacked
+sentences. The contract is the same as the inline Layer 1 catalog: detect → match the
+rule → rewrite without changing evidence.
 
 ---
 
@@ -142,10 +143,8 @@ A general humanizer flattens legitimate scholarly constructs. Keep them.
 - **Semicolons and an occasional triple** are fine in moderation. Em-dashes are the
   exception: remove them entirely (Layer 1), recasting with commas, colons, parentheses,
   or separate sentences.
-- **Formal definitions, named methods/metrics, technical terms, equations, and symbols**
-  stay verbatim.
-- **Never invent, drop, or alter a number, equation, or citation.** Same content;
-  preserve every cite key.
+- Numbers, citations, named methods/metrics, and formal definitions stay verbatim,
+  subject to the C0–C2 red lines above; this layer adds nothing to them.
 
 ---
 

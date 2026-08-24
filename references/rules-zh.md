@@ -10,7 +10,7 @@ Layer 2 (2.1–2.11) and Layer 6 (NSF / NIH) live in references/layers/ and load
 
 # Rules · 中文（学术写作）
 
-> 路由：当可编辑散文的中文 CJK token 占比 r ≥ 0.5 时进入本规则集（路由逻辑见 SKILL.md）。
+> 路由：当 SKILL.md "Language routing and the C0–C7 contract" 的切换条件成立时进入本规则集（按可编辑散文的主导语言判断，不看字符占比——路由逻辑以 SKILL.md 为准）。
 >
 > 本文件只覆盖**本地风格修复（C7）**。锁定 span、术语一致性、论断保留、篇章模式审计等通用契约仍由 SKILL.md 的 C0–C6 负责。
 
