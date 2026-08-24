@@ -17,7 +17,7 @@ account, run this script on the actual diff.
 | --------------------- | -------------------------------------------------- | ------------------------------------------------------------------------ |
 | C0.1 numbers          | FAIL if missing, WARN if new                       | Integers, decimals, percentages, ranges                                  |
 | C0.2 stats            | FAIL if missing                                    | p < 0.05, n = 692, t = 2.3, AUROC = 0.91, CI =, etc.                     |
-| C0.3 citations        | FAIL if missing                                    | [1], [1-3], (Smith, 2020), Smith (2020), Smith et al. (2019)             |
+| C0.3 citations        | FAIL if missing                                    | [1], [1-3], (Smith, 2020), Smith et al. (2019), 李聪（2021）, （李聪，2021） |
 | C0.4 math             | FAIL if missing                                    | $...$$, $...$, [...], begin{...}...end{...}                              |
 | C0.5 dates            | WARN if missing                                    | 2023 nian 8 yue, 2023-08, August 2023, bare year                         |
 | C1 structure          | WARN if drift > 20% paragraphs / 25% sentences     | paragraph and sentence counts                                            |
@@ -77,8 +77,9 @@ Both shipped examples should exit 0.
 - Field-specific named terms: append to the NAMED_TERMS list in the script.
 - Stricter p-value rule: by default, the script allows new p-values in the
   after (because adding a missing *p* < 0.05 is the kind of legitimate
-  enhancement SKILL.md Layer 4 calls for). If your venue forbids this,
-  tighten the extract_pvals comparison in compare().
+  enhancement SKILL.md Layer 4 calls for). If your venue forbids this, tighten
+  `extract_pvals()` — it lives behind the `extract_features()` seam;
+  `compare()` diffs FeatureSets and never sees text.
 
 ### Limitations
 
@@ -92,3 +93,6 @@ Both shipped examples should exit 0.
 - Numbers that appear inside a citation (Smith 2020 -> year 2020) are
   filtered to reduce noise, but very short abstracts may still produce
   false-positive structure-drift warnings.
+- The stats extractor matches comparisons (`p < 0.05`, `p ≤`, `p >`) and
+  right-side forms like `n = 692`; a bare equality `p = 0.03` is caught only
+  indirectly, via the numbers audit.

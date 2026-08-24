@@ -12,33 +12,17 @@ Engineering skills 探索 codebase 时，应如何消费这个 repo 的 domain d
 
 ## File structure
 
-Single-context repo（大多数 repos）：
+本 repo 采用 **single-context** 布局：
 
 ```
 /
 ├── CONTEXT.md
 ├── docs/adr/
-│   ├── 0001-event-sourced-orders.md
-│   └── 0002-postgres-for-write-model.md
 └── src/
 ```
 
-Multi-context repo（根目录存在 `CONTEXT-MAP.md`）：
-
-```
-/
-├── CONTEXT-MAP.md
-├── docs/adr/                          ← system-wide decisions
-└── src/
-    ├── ordering/
-    │   ├── CONTEXT.md
-    │   └── docs/adr/                  ← context-specific decisions
-    └── billing/
-        ├── CONTEXT.md
-        └── docs/adr/
-```
-
-本 repo 采用 **single-context** 布局。
+Multi-context repos（根目录有 `CONTEXT-MAP.md`，每个 context 一份 `CONTEXT.md`
++ `docs/adr/`）的完整布局见上游 `/improve-codebase-architecture` skill 文档。
 
 ## Use the glossary's vocabulary
 
