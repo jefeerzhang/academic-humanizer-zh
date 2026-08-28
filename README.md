@@ -107,7 +107,7 @@ It is a plain `SKILL.md` plus examples, so it also runs as a skill or system pro
 ## Use
 
 ```
-/academic-humanizer
+/academic-humanizer-zh
 [paste a section, or point at main.tex]
 # optionally: "match my voice from prior_paper.pdf; target venue: ICLR"
 ```

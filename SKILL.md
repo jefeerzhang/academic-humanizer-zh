@@ -1,5 +1,5 @@
 ---
-name: academic-humanizer
+name: academic-humanizer-zh
 version: 0.4.0
 description: |
   Edit AI-assisted academic prose (papers, theses, rebuttals, reviews) and grant
