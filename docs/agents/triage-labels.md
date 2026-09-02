@@ -1,6 +1,6 @@
 # Triage Labels
 
-Skills 使用五个 canonical triage roles。这个文件把这些 roles 映射到此 repo issue tracker 中实际使用的 label 字符串。
+Skills 使用五个 canonical triage roles。**Repo 内 canonical 定义**：`.github/triage-labels.json`（CI 校验与文档一致）。同步到 GitHub Issues：`python scripts/sync_triage_labels.py`。
 
 | Label in mattpocock/skills | Label in our tracker | Meaning                                  |
 | -------------------------- | -------------------- | ---------------------------------------- |

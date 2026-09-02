@@ -63,11 +63,11 @@ Stdin, two blobs separated by <<<AFTER>>>:
     python scripts/test_validate_red_lines.py
     python scripts/test_combined_parser.py
     python scripts/test_validate_layer7_injection.py
+    python scripts/test_repo_consistency.py
 
-Covers the known failure modes: duplicated numbers halved, Chinese full-width
-citations（李聪（2021）/ （李聪，2021）), citation reflow vs swap, year-range
-parsing (2020–2025), combined-parser meta-boundary stripping, and Layer 7
-section detection / short-text density.
+Covers the known failure modes: duplicated numbers halved, Chinese citations,
+year-range parsing, combined-parser meta boundaries, Layer 7 checks, and
+README / LICENSE / CONTEXT / English-example alignment with CI.
 
 ### Smoke test
 

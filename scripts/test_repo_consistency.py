@@ -52,6 +52,24 @@ class TestRepoConsistency(unittest.TestCase):
                 "AGENTS.md references CONTEXT.md but file is missing",
             )
 
+    def test_agents_domain_paths_exist(self):
+        agents = (REPO_ROOT / "AGENTS.md").read_text(encoding="utf-8")
+        if "docs/adr/" in agents or "docs/adr" in agents:
+            adr = REPO_ROOT / "docs" / "adr"
+            self.assertTrue(adr.is_dir(), "docs/adr/ missing")
+
+    def test_triage_labels_manifest_matches_docs(self):
+        manifest = REPO_ROOT / ".github" / "triage-labels.json"
+        self.assertTrue(manifest.is_file(), ".github/triage-labels.json missing")
+        import json
+        data = json.loads(manifest.read_text(encoding="utf-8"))
+        names = {entry["name"] for entry in data["labels"]}
+        expected = {
+            "needs-triage", "needs-info", "ready-for-agent",
+            "ready-for-human", "wontfix",
+        }
+        self.assertEqual(names, expected)
+
     def test_license_fork_copyright(self):
         license_text = (REPO_ROOT / "LICENSE").read_text(encoding="utf-8")
         self.assertIn("jefeerzhang", license_text.lower())
