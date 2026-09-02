@@ -61,13 +61,22 @@ casualizing, and (2) enforce the discipline a general humanizer misses:
    (paper vs. proposal) and the target venue or funding agency. For proposals, also apply
    Layer 6 and preserve appropriate vision.
 2. **Audit** (do not edit yet): list each detected pattern with its location and proposed
-   fix, and each empirical claim's evidence status.
+   fix, and each empirical claim's evidence status. If the document-style signature routes
+   to **Layer 7** (Academic Injection, see "Document-style routing"), also write the
+   injection plan: cognitive hedging + ≤1 academic first-person, **only** in the
+   Discussion / Conclusion / Limitations / 政策含义 sections.
 3. **Rewrite**: same structure and content, all claims and citations preserved, tells
-   removed, over-claims matched to evidence, legitimate hedging kept. Before rewriting,
-   read `examples/before-after-zh-academic.md` to calibrate edit strength and output
-   format (English prose: `examples/before-after.md`).
+   removed, over-claims matched to evidence, legitimate hedging kept. When Layer 7 is
+   active, inject cognitive hedging / academic first-person **only** in Discussion /
+   Conclusion / Limitations / 政策含义 — **never** in the abstract, Methods, or Results.
+   Before rewriting, read `examples/before-after-zh-academic-injection.md` to calibrate
+   the Layer 7 edit strength (general edit strength: `examples/before-after-zh-academic.md`;
+   English prose: `examples/before-after.md`).
 4. **Report**: cleaned text plus a short change log + a **diff** + an **unchanged-claim
-   declaration**. Cover everything the original covered.
+   declaration**. Cover everything the original covered. When Layer 7 was active, run
+   `scripts/validate_layer7_injection.py` on the before/after pair and report its exit
+   code (0 pass / 1 warning / 2 red-line violation); CI wraps the same check via
+   `.github/workflows/audit.yml`.
 
 ---
 
