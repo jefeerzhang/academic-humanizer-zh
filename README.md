@@ -3,8 +3,8 @@
 > *「AI 起草的论文你敢直接投稿吗？——每个数字、引用、术语必须一字不动。」*
 
 [![license](https://img.shields.io/badge/license-MIT-2f8f57?style=flat-square)](LICENSE)
-&nbsp;![version](https://img.shields.io/badge/version-0.5.0-2f8f57?style=flat-square)](CHANGELOG.md)
-&nbsp;![skill](https://img.shields.io/badge/skill-papers_and_grant_proposals-1c1a15?style=flat-square)](SKILL.md)
+&nbsp;[![version](https://img.shields.io/badge/version-0.5.0-2f8f57?style=flat-square)](CHANGELOG.md)
+&nbsp;[![skill](https://img.shields.io/badge/skill-papers_and_grant_proposals-1c1a15?style=flat-square)](SKILL.md)
 &nbsp;![built by](https://img.shields.io/badge/built_by-NSF,_CAREER,_NIH_R01-555?style=flat-square)
 &nbsp;[![skills.sh](https://img.shields.io/badge/skills.sh-jefeerzhang%2Facademic--humanizer--zh-2f8f57?style=flat-square)](https://skills.sh/jefeerzhang/academic-humanizer-zh)
 &nbsp;[![audit](https://github.com/jefeerzhang/academic-humanizer-zh/actions/workflows/audit.yml/badge.svg)](../../actions/workflows/audit.yml)
