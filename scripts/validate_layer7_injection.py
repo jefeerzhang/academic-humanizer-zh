@@ -96,14 +96,25 @@ SECTION_NORMALIZE: dict[str, str] = {
     "方法": "方法", "方法论": "方法论", "研究方法": "研究方法",
     "实验设计": "实验设计", "数据与": "数据与", "实证结果": "实证结果",
     "研究结果": "研究结果", "结果": "结果", "发现": "发现",
-    "结果与讨论": "结果", "讨论": "讨论", "局限": "局限", "局限性": "局限",
+    "结果与讨论": "结果与讨论", "讨论": "讨论", "局限": "局限", "局限性": "局限",
     "政策含义": "政策含义", "摘要": "摘要", "引言": "引言", "背景": "背景",
     "文献综述": "文献综述", "methods": "方法", "method": "方法",
-    "results": "结果", "result": "结果", "results and discussion": "结果",
+    "results": "结果", "result": "结果",
+    "results and discussion": "结果与讨论",
     "discussion": "讨论", "limitations": "局限", "limitation": "局限",
     "conclusions": "结论", "conclusion": "结论", "introduction": "引言",
     "abstract": "摘要", "background": "背景", "literature review": "文献综述",
 }
+
+COMPOUND_RESULTS_DISCUSSION = frozenset({"结果与讨论"})
+
+DISCUSSION_SPLIT_RE = re.compile(
+    r"^(?:"
+    r"#{1,6}\s*讨论\s*$|讨论[：:]|"
+    r"#{1,6}\s*Discussion\s*$|Discussion[.:]"
+    r")",
+    re.MULTILINE | re.IGNORECASE,
+)
 
 LAYER7_ACTIVATION_MARKERS = [
     "Layer 7", "启用注入", "启用 Layer 7", "学术注入层",
@@ -155,6 +166,24 @@ def _normalize_section(raw: str) -> str:
     return SECTION_NORMALIZE.get(key, SECTION_NORMALIZE.get(key.lower(), key))
 
 
+def _split_compound_results_discussion(
+    body: str, base_line: int,
+) -> list[tuple[str, str, int]]:
+    """Split 结果与讨论 / Results and Discussion into Results + Discussion spans."""
+    m = DISCUSSION_SPLIT_RE.search(body)
+    if not m:
+        return [("结果", body, base_line)]
+    parts: list[tuple[str, str, int]] = []
+    before = body[: m.start()].strip()
+    after = body[m.end():].strip()
+    if before:
+        parts.append(("结果", before, base_line))
+    if after:
+        disc_line = base_line + body[: m.start()].count("\n")
+        parts.append(("讨论", after, disc_line))
+    return parts
+
+
 def sectionize(text: str) -> list[tuple[str, str, int]]:
     matches = list(SECTION_HEADER_RE.finditer(text))
     if not matches:
@@ -172,7 +201,11 @@ def sectionize(text: str) -> list[tuple[str, str, int]]:
         end = matches[i + 1].start() if i + 1 < len(matches) else len(text)
         body = text[start:end].strip()
         start_line = text[: m.start()].count("\n") + 1
-        if body:
+        if not body:
+            continue
+        if section_name in COMPOUND_RESULTS_DISCUSSION:
+            sections.extend(_split_compound_results_discussion(body, start_line))
+        else:
             sections.append((section_name, body, start_line))
     return sections
 

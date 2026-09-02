@@ -1,0 +1,29 @@
+{
+  "labels": [
+    {
+      "name": "needs-triage",
+      "color": "ededed",
+      "description": "Maintainer needs to evaluate this issue"
+    },
+    {
+      "name": "needs-info",
+      "color": "d4c5f9",
+      "description": "Waiting on reporter for more information"
+    },
+    {
+      "name": "ready-for-agent",
+      "color": "0e8a16",
+      "description": "Fully specified, ready for an AFK agent"
+    },
+    {
+      "name": "ready-for-human",
+      "color": "fbca04",
+      "description": "Requires human implementation"
+    },
+    {
+      "name": "wontfix",
+      "color": "ffffff",
+      "description": "Will not be actioned"
+    }
+  ]
+}

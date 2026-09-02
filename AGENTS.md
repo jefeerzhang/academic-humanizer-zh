@@ -11,7 +11,9 @@ Issues 存放在 GitHub Issues（jefeerzhang/academic-humanizer-zh），通过 g
 
 ### Triage labels
 
-默认五 role 词汇表（needs-triage / needs-info / ready-for-agent / ready-for-human / wontfix）。See `docs/agents/triage-labels.md`.
+默认五 role 词汇表（needs-triage / needs-info / ready-for-agent / ready-for-human / wontfix）。
+Canonical 定义在 **`.github/triage-labels.json`**；映射说明见 `docs/agents/triage-labels.md`。
+同步到 GitHub：`python scripts/sync_triage_labels.py`（需 `gh` 已登录）。
 
 ### Domain docs
 

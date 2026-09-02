@@ -25,11 +25,43 @@ class TestSectionize(unittest.TestCase):
         self.assertIn("结果", names)
         self.assertIn("讨论", names)
 
-    def test_compound_header_results_discussion(self):
-        text = "## 结果与讨论\n回归结果显示显著。\n"
+    def test_compound_header_splits_results_and_discussion(self):
+        text = (
+            "## 结果与讨论\n"
+            "回归结果显示显著正向偏好。\n\n"
+            "### 讨论\n"
+            "笔者认为这一差异源于认知差异。目前尚不清楚机制是否普适。\n"
+        )
+        sections = sectionize(text)
+        names = [s[0] for s in sections]
+        self.assertIn("结果", names)
+        self.assertIn("讨论", names)
+        report = audit_pair("", text, force=True, no_red_line=True)
+        fails = [f for f in report.findings if f.severity == "FAIL"]
+        self.assertEqual(fails, [], msg=str(fails))
+
+    def test_compound_header_results_part_still_forbidden(self):
+        text = "## 结果与讨论\n这一发现有待跨地区样本验证。\n"
         sections = sectionize(text)
         self.assertEqual(sections[0][0], "结果")
-        self.assertIn("结果", FORBIDDEN_SECTIONS)
+        findings, _, _ = check_hedging(text, sections)
+        fails = [f for f in findings if f.severity == "FAIL"]
+        self.assertTrue(any("§结果" in f.message for f in fails))
+
+    def test_compound_header_english_discussion_split(self):
+        text = (
+            "## Results and Discussion\n"
+            "Accuracy improved on all benchmarks.\n\n"
+            "Discussion: We attribute the gain to better calibration.\n"
+            "目前尚不清楚 whether this holds on OOD data.\n"
+        )
+        sections = sectionize(text)
+        names = [s[0] for s in sections]
+        self.assertIn("结果", names)
+        self.assertIn("讨论", names)
+        findings, _, _ = check_hedging(text, sections)
+        fails = [f for f in findings if f.severity == "FAIL" and "§结果" in f.message]
+        self.assertEqual(fails, [])
 
     def test_abstract_forbidden(self):
         text = "## 摘要\n笔者认为结论成立。"
