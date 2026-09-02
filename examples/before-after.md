@@ -4,12 +4,13 @@
 > In recent years, graph representation learning has attracted increasing attention. In this paper, we
 > propose a novel method and demonstrate through extensive experiments that it significantly outperforms
 > existing approaches, paving the way for a new paradigm. To the best of our knowledge, this is the first
-> work to delve into this crucial problem.
+> work to delve into this crucial problem. On three citation benchmarks, focal loss reaches 0.71 minority-class
+> F1; our method reaches 0.74–0.77 F1 with majority-class accuracy within 1 point of focal loss.
 
 **After (academic-humanized):**
 > Existing graph methods for imbalanced node classification reweight the loss but ignore label noise. We
 > add a noise-aware reweighting term and evaluate it on three citation benchmarks, where it improves
-> minority-class F1 by 3-6 points over focal loss while leaving majority-class accuracy within 1 point.
+> minority-class F1 by 3–6 points over focal loss (0.74–0.77 vs 0.71) while leaving majority-class accuracy within 1 point.
 
 What changed: removed the formulaic opener, "novel", "extensive", "significantly" (unquantified),
 "paving the way", and "to the best of our knowledge"; downgraded "demonstrate" to "evaluate"; attached

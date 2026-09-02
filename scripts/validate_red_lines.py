@@ -38,6 +38,8 @@ from dataclasses import dataclass, field, asdict
 from pathlib import Path
 from typing import Iterable, Union
 
+from combined_parser import split_combined, split_combined_all
+
 # Windows consoles often default to a legacy codepage (e.g. GBK / cp936) that
 # cannot encode the FAIL/WARN tags. Force UTF-8 so output never crashes.
 for _stream in (sys.stdout, sys.stderr):
@@ -51,10 +53,13 @@ for _stream in (sys.stdout, sys.stderr):
 
 # Numbers: integers, decimals, percentages, scientific notation, ranges "2–6%"
 NUM_RE = re.compile(
-    r"(?<![A-Za-z\u4e00-\u9fff])"           # not preceded by letter / CJK
-    r"(\d{1,3}(?:,\d{3})*(?:\.\d+)?|\d+\.\d+|\d+)"  # the number
-    r"(?:%|\s*[–—\-]\s*\d+%)?"           # optional percent or range
-    r"(?![A-Za-z])"
+    r"(?<![A-Za-z\u4e00-\u9fff\d])"           # not preceded by letter / CJK / digit
+    r"(\d{4}(?:[–—\-]\d{2,4})?"              # year or year range (2020–2025)
+    r"|\d{1,3}(?:,\d{3})+(?:\.\d+)?"         # grouped integer (1,234.56)
+    r"|\d+\.\d+"                             # decimal
+    r"|\d{1,3})"                              # short integer (avoid slicing years)
+    r"(?:%|\s*[–—\-]\s*\d+%)?"           # optional percent or percent range
+    r"(?![A-Za-z\d])"
 )
 
 # p-values and statistics
@@ -435,59 +440,8 @@ def compare_texts(before: str, after: str) -> list[Finding]:
 
 
 # ---------------------------------------------------------------------------
-# I/O helpers
+# I/O helpers — split_combined / split_combined_all live in combined_parser.py
 # ---------------------------------------------------------------------------
-
-def split_combined(text: str) -> tuple[str, str]:
-    """Find the first '## Before' and the next '## After' heading; treat only the
-    span from Before up to (but excluding) After as before, and the After span
-    up to the NEXT '## ' heading as after.
-
-    This strips any frontmatter and any meta sections (场景假设 / 修改对照 /
-    合规清单 / 总结 etc.) so the audit compares only the editable prose.
-    """
-    pairs = list(split_combined_all(text))
-    if not pairs:
-        raise ValueError(
-            "Could not find both '## Before' and '## After' headings. "
-            "Use --before/--after, or separate stdin with a line "
-            "containing '<<<AFTER>>>'."
-        )
-    return pairs[0]
-
-
-def split_combined_all(text: str) -> list[tuple[str, str]]:
-    """Return ALL (before, after) pairs found in a combined markdown file.
-
-    Used by --all-pairs. Each pair is the span from a '## Before' heading
-    up to (but excluding) the next '## After' heading, and from that
-    '## After' heading up to the next '## ' heading.
-
-    Stdin literal marker '<<<AFTER>>>' is treated as a single pair and
-    short-circuits (it is not repeated).
-    """
-    if "<<<AFTER>>>" in text:
-        before, after = text.split("<<<AFTER>>>", 1)
-        return [(before.strip(), after.strip())]
-
-    pairs: list[tuple[str, str]] = []
-    before_matches = list(re.finditer(r"^##\s+Before\b", text, flags=re.MULTILINE))
-    after_matches = list(re.finditer(r"^##\s+After\b", text, flags=re.MULTILINE))
-
-    for bm in before_matches:
-        am = next((m for m in after_matches if m.start() > bm.start()), None)
-        if am is None:
-            continue
-        before_body = text[bm.start(): am.start()]
-        before_body = re.sub(r"^##\s+Before.*$", "", before_body, count=1, flags=re.MULTILINE).strip()
-
-        next_h = re.search(r"^##\s", text[am.end():], flags=re.MULTILINE)
-        after_end = am.end() + next_h.start() if next_h else len(text)
-        after_body = text[am.start(): after_end]
-        after_body = re.sub(r"^##\s+After.*$", "", after_body, count=1, flags=re.MULTILINE).strip()
-
-        pairs.append((before_body, after_body))
-    return pairs
 
 
 def main() -> int:

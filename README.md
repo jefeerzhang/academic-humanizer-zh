@@ -101,8 +101,8 @@ This fork adds Chinese academic writing support on top of the upstream `AIScient
 - **`examples/before-after-zh-academic.md`** — a submission-grade before/after using a real Chinese
   social-science abstract, with each edit mapped to a specific rule.
 - **`examples/before-after-zh-academic-injection.md`** — v0.5.0 example. Three paragraph types
-  (social-science abstract / 科普段 / 引言人文叙述) showing Layer 7 enabled vs. disabled, with
-  C0–C2 + Layer 7 density checks side-by-side.
+  (social-science abstract / 科普段 / 引言人文叙述) showing Layer 7 **loaded vs injection disabled**
+  (example 3: C7 only, no hedging injection in intro), with C0–C2 + Layer 7 density checks.
 - **`examples/before-after-tri-research-report-zh.md`** — a real-world before/after on a
   `tri-research` deep-research report (30 references, 30 inline `[N]` citations, 7 fixed sections),
   demonstrating that the C0–C2 red lines (references / citations / structure / numbers untouched)
@@ -188,7 +188,7 @@ The skill picks its layer stack by **document-style signature**:
 |---|---|
 | Hard academic markers (`\cite{}`, `p < 0.0x`, `n = xxx`, `.bib`, equations) | Layer 1–6 + C7 (full pass); **Layer 7 NOT activated** |
 | Grant proposal markers (NIH Aims / NSF Project Summary / fellowship) | Layer 1–6 + Layer 6 grant mode + C7; **Layer 7 NOT activated** |
-| Continuous Chinese with academic cues (摘要 / 本文提出 / 研究方法 / 政策含义), no hard markers | Layer 1–5 + C7 + **Layer 7 enabled** |
+| Continuous Chinese with academic cues (摘要 / 本文提出 / 研究方法 / 政策含义), no hard markers | Layer 1–5 + C7 + **Layer 7 loaded** (inject hedging/first-person only in Discussion / Conclusion / Limitations) |
 | User says "摘要松一松 / 科普段落自然化 / 不要太死板" | **Force-activate Layer 7** |
 | Non-academic Chinese (公众号 / 公文 / 商业 / 新闻 / 文学) | Defer to sibling skill [`natural-chinese`](https://github.com/jefeerzhang/natural-chinese) |
 
@@ -203,9 +203,10 @@ Full routing logic and edge cases in [`SKILL.md`](SKILL.md) → "Document-style 
 
 ## Document-type fallbacks
 
-If the input is a `.bib` / `.bbl`, a `.tex` mostly equations, a rebuttal letter, a cover letter,
-or non-academic text, the skill **does not edit**. It reports what it saw and why it fell back, so
-the author can re-route to the right tool.
+If the input is a `.bib` / `.bbl`, a `.tex` mostly equations, or non-academic text, the skill
+**does not edit** and reports why. **Rebuttal / response-to-reviewers letters** use **rebuttal mode**
+(politeness + point-by-point structure) — they are edited, not treated as a no-edit fallback.
+Cover letters keep professional register; do not strip "we respectfully" politeness as AI fluff.
 
 ## References
 
