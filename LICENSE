@@ -1,9 +1,11 @@
 MIT License
 
-Copyright (c) 2026 AIScientists-Dev
+Copyright (c) 2026 jefeerzhang (https://github.com/jefeerzhang/academic-humanizer-zh)
 
-This work builds on "humanizer" by blader (https://github.com/blader/humanizer, MIT) and adopts
-standards from "ARMS" (https://github.com/koaeraser/ARMS); see the Acknowledgments in README.md.
+This fork builds on academic-humanizer by AIScientists-Dev
+(https://github.com/AIScientists-Dev/academic-humanizer, MIT; portions Copyright (c) 2026
+AIScientists-Dev), "humanizer" by blader (https://github.com/blader/humanizer, MIT), and adopts
+standards from ARMS (https://github.com/koaeraser/ARMS). See Acknowledgments in README.md.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,

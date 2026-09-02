@@ -112,9 +112,8 @@ This fork adds Chinese academic writing support on top of the upstream `AIScient
   hedging in Methods/Results), anti-human-trap blacklist (no emoji, no 小红书体, no 口语第一人称),
   and delegates C0–C2 to `validate_red_lines.py`. Exit codes 0/1/2 for CI integration.
 
-The English rules and contracts (C0–C7) in `SKILL.md` are unchanged. Layer 2 and Layer 6 were moved
-out of `SKILL.md` into `references/layers/` so the main skill file stays under ~230 lines and the
-agent can load the heavy catalogs on demand.
+The English rules and contracts (C0–C7) live in `SKILL.md` (~280 lines: core layers + routing).
+Heavy catalogs (Layer 2, Layer 6, Layer 7) live under `references/layers/` and load on demand.
 
 ---
 
@@ -141,7 +140,8 @@ It is a plain `SKILL.md` plus examples, so it also runs as a skill or system pro
 
 ```
 .
-├── SKILL.md                          # Core contract + Layers 1, 3, 4, 5 (≈230 lines) + Document-style routing
+├── CONTEXT.md                        # Domain glossary (layers, C0–C2, routing terms)
+├── SKILL.md                          # Core contract + Layers 1, 3–5 (~280 lines) + Document-style routing
 ├── references/
 │   ├── rules-zh.md                   # C7 Chinese local rules (load on routing) — §9 Layer 7 exemption table
 │   └── layers/
@@ -149,7 +149,7 @@ It is a plain `SKILL.md` plus examples, so it also runs as a skill or system pro
 │       ├── layer-6-proposals.md      # NSF / NIH structure + claim↔feasibility
 │       └── layer-7-academic-injection.md  # v0.5.0: academic-filtered 破+立双轨 (cognitive hedging + 第一人称限密度)
 ├── examples/
-│   ├── before-after.md               # English (paper, NIH Aims, NSF CAREER)
+│   ├── before-after.md               # English (paper, NIH Aims, NSF CAREER) — CI-audited pairs
 │   ├── before-after-zh-academic.md   # Chinese social-science abstract
 │   ├── before-after-zh-academic-injection.md  # v0.5.0: Layer 7 enabled/disabled comparisons
 │   └── before-after-tri-research-report-zh.md  # Real tri-research report (30 cites)
@@ -168,17 +168,16 @@ personalized, not a one-size-fits-all filter.
 
 ## How it works
 
-Six layers: general AI-tell catalog → academic-specific tells → preserve scholarly conventions →
-claim↔evidence matching → voice/venue calibration → funding-proposal mode (NSF/NIH structure,
-first-page primacy, claim↔feasibility). The audit→rewrite loop is defined in [`SKILL.md`](SKILL.md).
-A short Chinese-ruleset (C7) is layered on top when the editable prose is continuous Chinese. Heavy
-catalogs (Layer 2, Layer 6) live under `references/layers/` and load on demand.
+Seven layers: general AI-tell catalog → academic-specific tells → preserve scholarly conventions →
+claim↔evidence matching → voice/venue calibration → funding-proposal mode (NSF/NIH) → optional Layer 7
+academic injection (Chinese 社科摘要 / 科普段 / humanities intro). The audit→rewrite loop is defined in
+[`SKILL.md`](SKILL.md). Chinese ruleset **C7** loads on continuous-Chinese routing; heavy catalogs
+(Layer 2, Layer 6, Layer 7) live under `references/layers/` and load on demand.
 
-**v0.5.0 — Layer 7 bridge**: a seventh layer (`references/layers/layer-7-academic-injection.md`)
-loads on demand for social-science abstracts / 科普段 / humanities introductions. It activates only
-cognitive hedging + first-person density limiting — the academic-filtered subset of sibling skill
-[`natural-chinese`](https://github.com/jefeerzhang/natural-chinese)'s "破+立双轨". C0–C2 red lines
-remain the dominant contract.
+Layer 7 (`references/layers/layer-7-academic-injection.md`) loads only for matching document
+signatures. It adds cognitive hedging + first-person density limiting — the academic-filtered subset of
+sibling skill [`natural-chinese`](https://github.com/jefeerzhang/natural-chinese)'s "破+立双轨".
+C0–C2 red lines remain the dominant contract.
 
 ## Scenario routing
 
