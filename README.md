@@ -4,7 +4,7 @@
 > that adds Chinese academic-writing rules and structural fixes.
 
 [![license](https://img.shields.io/badge/license-MIT-2f8f57?style=flat-square)](LICENSE)
-&nbsp;![version](https://img.shields.io/badge/version-0.4.0-2f8f57?style=flat-square)
+&nbsp;![version](https://img.shields.io/badge/version-0.5.0-2f8f57?style=flat-square)
 &nbsp;![skill](https://img.shields.io/badge/skill-papers_and_grant_proposals-1c1a15?style=flat-square)
 &nbsp;![built by](https://img.shields.io/badge/built_by-NSF,_CAREER,_NIH_R01-555?style=flat-square)
 
@@ -81,13 +81,26 @@ This fork adds Chinese academic writing support on top of the upstream `AIScient
   mis-routing an English manuscript with a Chinese abstract). Covers six typical AI-tells (套话开头/
   过渡/收尾、价值判断词饱和、抽象主语、名词化动词、排比三件套、假中立元评论) and explicitly
   protects academic conventions that must not be changed (passive voice, "本研究/本文", long
-  attributives, statistical notation, references, project numbers).
+  attributives, statistical notation, references, project numbers). v0.5.0 adds §9 — the academic
+  injection (Layer 7) exemption table.
+- **`references/layers/layer-7-academic-injection.md`** — v0.5.0 bridge from sibling skill
+  [`natural-chinese`](https://github.com/jefeerzhang/natural-chinese). Loads only when the input
+  matches "学术 + 口语化段落 / 科普段 / 社科摘要 / humanistic introduction" branch (see
+  "Document-style routing" in `SKILL.md`). Activates cognitive hedging + first-person density
+  limiting only; other "立人味" tools remain closed in academic register.
 - **`examples/before-after-zh-academic.md`** — a submission-grade before/after using a real Chinese
   social-science abstract, with each edit mapped to a specific rule.
+- **`examples/before-after-zh-academic-injection.md`** — v0.5.0 example. Three paragraph types
+  (social-science abstract / 科普段 / 引言人文叙述) showing Layer 7 enabled vs. disabled, with
+  C0–C2 + Layer 7 density checks side-by-side.
 - **`examples/before-after-tri-research-report-zh.md`** — a real-world before/after on a
   `tri-research` deep-research report (30 references, 30 inline `[N]` citations, 7 fixed sections),
   demonstrating that the C0–C2 red lines (references / citations / structure / numbers untouched)
   hold on structured research reports, not just paper abstracts.
+- **`scripts/validate_layer7_injection.py`** — v0.5.0 companion to `validate_red_lines.py`. Audits
+  first-person count (≤1), cognitive hedging density (1–3 / 千字), forbidden-section drops (no
+  hedging in Methods/Results), anti-human-trap blacklist (no emoji, no 小红书体, no 口语第一人称),
+  and delegates C0–C2 to `validate_red_lines.py`. Exit codes 0/1/2 for CI integration.
 
 The English rules and contracts (C0–C7) in `SKILL.md` are unchanged. Layer 2 and Layer 6 were moved
 out of `SKILL.md` into `references/layers/` so the main skill file stays under ~230 lines and the
@@ -116,19 +129,22 @@ It is a plain `SKILL.md` plus examples, so it also runs as a skill or system pro
 
 ```
 .
-├── SKILL.md                          # Core contract + Layers 1, 3, 4, 5 (≈230 lines)
+├── SKILL.md                          # Core contract + Layers 1, 3, 4, 5 (≈230 lines) + Document-style routing
 ├── references/
-│   ├── rules-zh.md                   # C7 Chinese local rules (load on routing)
+│   ├── rules-zh.md                   # C7 Chinese local rules (load on routing) — §9 Layer 7 exemption table
 │   └── layers/
 │       ├── layer-2-academic-tells.md # 2.1–2.11 detailed catalog
-│       └── layer-6-proposals.md      # NSF / NIH structure + claim↔feasibility
+│       ├── layer-6-proposals.md      # NSF / NIH structure + claim↔feasibility
+│       └── layer-7-academic-injection.md  # v0.5.0: academic-filtered 破+立双轨 (cognitive hedging + 第一人称限密度)
 ├── examples/
 │   ├── before-after.md               # English (paper, NIH Aims, NSF CAREER)
 │   ├── before-after-zh-academic.md   # Chinese social-science abstract
+│   ├── before-after-zh-academic-injection.md  # v0.5.0: Layer 7 enabled/disabled comparisons
 │   └── before-after-tri-research-report-zh.md  # Real tri-research report (30 cites)
 ├── scripts/
 │   ├── validate_red_lines.py         # C0-C2 mechanical auditor (CI-friendly exit codes)
-│   └── README.md                     # how to use the auditor
+│   ├── validate_layer7_injection.py  # v0.5.0: Layer 7 injection-density auditor
+│   └── README.md                     # how to use the auditors
 └── assets/                           # README banners
 ```
 
@@ -145,6 +161,33 @@ claim↔evidence matching → voice/venue calibration → funding-proposal mode 
 first-page primacy, claim↔feasibility). The audit→rewrite loop is defined in [`SKILL.md`](SKILL.md).
 A short Chinese-ruleset (C7) is layered on top when the editable prose is continuous Chinese. Heavy
 catalogs (Layer 2, Layer 6) live under `references/layers/` and load on demand.
+
+**v0.5.0 — Layer 7 bridge**: a seventh layer (`references/layers/layer-7-academic-injection.md`)
+loads on demand for social-science abstracts / 科普段 / humanities introductions. It activates only
+cognitive hedging + first-person density limiting — the academic-filtered subset of sibling skill
+[`natural-chinese`](https://github.com/jefeerzhang/natural-chinese)'s "破+立双轨". C0–C2 red lines
+remain the dominant contract.
+
+## Scenario routing
+
+The skill picks its layer stack by **document-style signature**:
+
+| Input signature | Routes to |
+|---|---|
+| Hard academic markers (`\cite{}`, `p < 0.0x`, `n = xxx`, `.bib`, equations) | Layer 1–6 + C7 (full pass); **Layer 7 NOT activated** |
+| Grant proposal markers (NIH Aims / NSF Project Summary / fellowship) | Layer 1–6 + Layer 6 grant mode + C7; **Layer 7 NOT activated** |
+| Continuous Chinese with academic cues (摘要 / 本文提出 / 研究方法 / 政策含义), no hard markers | Layer 1–5 + C7 + **Layer 7 enabled** |
+| User says "摘要松一松 / 科普段落自然化 / 不要太死板" | **Force-activate Layer 7** |
+| Non-academic Chinese (公众号 / 公文 / 商业 / 新闻 / 文学) | Defer to sibling skill [`natural-chinese`](https://github.com/jefeerzhang/natural-chinese) |
+
+Full routing logic and edge cases in [`SKILL.md`](SKILL.md) → "Document-style routing".
+
+## Sibling skills
+
+- [`natural-chinese`](https://github.com/jefeerzhang/natural-chinese) (MIT) — general-purpose
+  Chinese "破+立双轨" protocol covering 6 scenarios (公文 / 学术 / 商业 / 新闻 / 新媒体 / 文学).
+  Layer 7 of this skill borrows the academic-filtered subset of `natural-chinese`'s 5 "立人味"
+  tools. For non-academic Chinese prose, defer to `natural-chinese`.
 
 ## Document-type fallbacks
 

@@ -1,6 +1,6 @@
 ---
 name: academic-humanizer-zh
-version: 0.4.0
+version: 0.5.0
 description: |
   Edit AI-assisted academic prose (papers, theses, rebuttals, reviews) and grant
   proposals (NSF Project Summary/Description, NIH Specific Aims, fellowship/foundation
@@ -9,13 +9,25 @@ description: |
   dates, places, cite keys, or named methods/metrics. Not for blogs, marketing, or
   personal essays, and not for evading AI-use disclosure.
 
+  Bridge to sibling skill `natural-chinese` for the "破+立双轨" academic injection
+  layer (Layer 7): cognitive hedging + first-person density limiting, applied only
+  in social-science abstracts / humanities introductions / 科普段落. C0–C2 red lines
+  always dominate. For non-academic Chinese prose (公众号 / 公文 / 商业 / 新闻 / 文学),
+  defer to sibling skill `natural-chinese`.
+
   TRIGGER on any of: "润色论文" / "润色一下" / "改写学术稿" / "去 AI 味"
   / "academic humanizer" / "polish manuscript" / "edit my draft" / "match my voice"
   / "funding proposal review" / "NSF / NIH aims" / "Specific Aims"
-  / "降低 AI 痕迹" / "学术改稿" / "reviewer-proof" / "submit-grade edit".
+  / "降低 AI 痕迹" / "学术改稿" / "reviewer-proof" / "submit-grade edit"
+  / "摘要松一松" / "科普段落自然化".
 license: MIT
 compatibility: claude-code codex morphmind opencode
 allowed-tools: [Read, Write, Edit, Grep, Glob, Bash, WebFetch, WebSearch, AskUserQuestion, NotebookEdit]
+metadata:
+  sibling_skills:
+    - name: natural-chinese
+      url: https://github.com/jefeerzhang/natural-chinese
+      role: provides the "破+立" 双轨 methodology; Layer 7 borrows the academic-filtered subset
 ---
 
 # Academic Humanizer
@@ -92,6 +104,28 @@ should not be re-routed to the Chinese ruleset):
 
 Layers 1–6 are language-agnostic and apply to all text; C7 adds the Chinese-specific
 patterns on top.
+
+---
+
+## Document-style routing (academic-injection activation)
+
+Beyond language, route by **document style** — the layer that should run.
+
+| Input signature | Routes to |
+|---|---|
+| Hard academic markers (`\cite{}` / `\citep{}` / `\begin{equation}` / `p < 0.0x` / `n = xxx` / `.bib` pointer) | **Layer 1–6 + C7** (full academic pass); **Layer 7 NOT activated** |
+| Grant proposal markers (NIH Aims / NSF Project Summary / fellowship structure) | **Layer 1–6 + Layer 6 grant mode + C7**; **Layer 7 NOT activated** |
+| Continuous Chinese paragraph(s) with academic cues ("摘要" / "本文提出" / "研究表明" / "研究方法" / "政策含义") but **no** hard-academic markers | **Layer 1–5 + C7 + Layer 7 (Academic Injection Layer)** — bridges `natural-chinese`'s "破+立双轨" with academic filtering (cognitive hedging + first-person limiting) |
+| User explicitly says "摘要松一松" / "科普段落自然化" / "不要太死板" | **Force-activate Layer 7**, regardless of auto-detection |
+| Non-academic Chinese (公众号 / 公文 / 商业 / 新闻 / 文学) | **Defer to sibling skill [`natural-chinese`](https://github.com/jefeerzhang/natural-chinese)** — this skill does not edit |
+
+Layer 7 is **additive, never substitutive**:
+
+- It does NOT replace Layer 1–6; C0–C2 red lines always run first (numbers, citations, named terms, equations, dates).
+- It does NOT loosen C4 (claim ↔ evidence) or C5 (voice/venue).
+- It activates **only** cognitive hedging + first-person limiting density, with explicit upper bounds and forbidden-section lists. See `references/layers/layer-7-academic-injection.md` for the full contract.
+
+**Executable check**: `scripts/validate_layer7_injection.py` audits the AFTER text and exits 0/1/2. Use it after any Layer 7-enabled edit.
 
 ---
 
