@@ -61,6 +61,34 @@ class TestRedLines(unittest.TestCase):
         )
         self.assertEqual(severity_of(findings, "C0.3 citations"), "fail")
 
+    def test_chinese_multi_author_citation_dropped_fails(self):
+        findings = self.audit(
+            "已有研究（张三、李四，2021）验证了该假设。",
+            "该假设仍未被验证。",
+        )
+        self.assertEqual(severity_of(findings, "C0.3 citations"), "fail")
+
+    def test_latex_cite_dropped_fails(self):
+        findings = self.audit(
+            "Prior work \\cite{smith2020} supports this.",
+            "Prior work supports this.",
+        )
+        self.assertEqual(severity_of(findings, "C0.3 citations"), "fail")
+
+    def test_latex_citep_dropped_fails(self):
+        findings = self.audit(
+            "Prior work \\citep{smith2020} supports this.",
+            "Prior work supports this.",
+        )
+        self.assertEqual(severity_of(findings, "C0.3 citations"), "fail")
+
+    def test_latex_cite_deletion_not_flagged_as_missing_number(self):
+        findings = self.audit(
+            "Prior work \\cite{smith2020} supports this.",
+            "Prior work supports this.",
+        )
+        self.assertIsNone(severity_of(findings, "C0.1 numbers"))
+
     def test_english_citation_reflow_passes(self):
         findings = self.audit(
             "Prior work (Smith et al., 2019) supports this.",
@@ -113,6 +141,20 @@ class TestExtractionSeam(unittest.TestCase):
         self.assertIsInstance(fs, FeatureSet)
         self.assertEqual(fs.citations, ["smith|2020"])
         self.assertIn("n = 100", fs.stats)
+
+    def test_latex_cite_extracted(self):
+        fs = extract_features("Prior work \\cite{smith2020} supports this.")
+        self.assertIn("smith2020", fs.citations)
+
+    def test_latex_citep_extracted(self):
+        fs = extract_features("Prior work \\citep{smith2020} supports this.")
+        self.assertIn("smith2020", fs.citations)
+
+    def test_chinese_multi_author_canonicalizes(self):
+        self.assertEqual(
+            canonicalize_citation("（张三、李四，2021）"),
+            "张三李四（2021）",
+        )
 
 
 if __name__ == "__main__":

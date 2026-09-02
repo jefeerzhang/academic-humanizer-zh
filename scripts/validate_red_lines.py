@@ -36,7 +36,7 @@ import sys
 from collections import Counter
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
-from typing import Iterable
+from typing import Iterable, Union
 
 # Windows consoles often default to a legacy codepage (e.g. GBK / cp936) that
 # cannot encode the FAIL/WARN tags. Force UTF-8 so output never crashes.
@@ -74,14 +74,15 @@ PVAL_RE = re.compile(
 #   Chinese full-width forms: 李聪（2021）指出 / （李聪，2021）/ （李聪等，2021）
 _AUTHOR = r"[A-Z][A-Za-zÀ-ſ'\-]+"
 _CN_AUTHOR = r"[\u4e00-\u9fff]{2,4}"
+_CN_AUTHOR_SEP = r"\s*[、,，和]\s*"
 CITE_RE = re.compile(
-    r"\[\d+(?:\s*[,–-]\s*\d+)*\]"
+    r"\\(?:cite|citep|citet)(?:\[[^\]]*\])?\{[^}]+\}"
+    r"|\[\d+(?:\s*[,–-]\s*\d+)*\]"
     r"|(?:^|\s)\(" + _AUTHOR + r"(?:\s+et\s+al\.?)?\s*,\s*\d{4}[a-z]?\)"
     r"|(?:^|\s)" + _AUTHOR + r"(?:\s+et\s+al\.?)?\s*\(\d{4}[a-z]?\)"
-    r"|" + _CN_AUTHOR + r"[（(]\d{4}[a-z]?[）)]"
-    r"|[（(]" + _CN_AUTHOR + r"(?:等)?(?:\s*et\s+al\.?)?\s*[，,]\s*\d{4}[a-z]?[）)]",
+    r"|(?:" + _CN_AUTHOR + _CN_AUTHOR_SEP + r")*" + _CN_AUTHOR + r"[（(]\d{4}[a-z]?[）)]"
+    r"|[（(](?:" + _CN_AUTHOR + _CN_AUTHOR_SEP + r")*" + _CN_AUTHOR + r"(?:等)?(?:\s*et\s+al\.?)?\s*[，,]\s*\d{4}[a-z]?[）)]",
 )
-
 # Math / equations: $...$, $$...$$, \( \), \[ \], \begin{...}
 MATH_RE = re.compile(
     r"\$\$.+?\$\$|"           # $$...$$
@@ -141,15 +142,22 @@ _NEGATION_SUFFIXES = (
 
 
 def extract_numbers(text: str) -> list[str]:
-    return [m.group(0).replace(" ", "") for m in NUM_RE.finditer(text)]
+    # Mask citations so that years / digits inside \cite{...}, cite keys, or
+    # author-year parentheses do not register as standalone numbers.
+    masked = list(text)
+    for m in CITE_RE.finditer(text):
+        for i in range(m.start(), m.end()):
+            masked[i] = " "
+    masked_text = "".join(masked)
+    return [m.group(0).replace(" ", "") for m in NUM_RE.finditer(masked_text)]
 
 
 def extract_pvals(text: str) -> list[str]:
     return [re.sub(r"\s+", " ", m.group(0)).strip() for m in PVAL_RE.finditer(text)]
 
 
-def canonicalize_citation(raw: str) -> str:
-    """Collapse surface variation of one citation to a stable key.
+def canonicalize_citation(raw: str) -> Union[str, list[str]]:
+    r"""Collapse surface variation of one citation to a stable key.
 
     Two failure modes this absorbs (both were real bugs):
     - Prose glues onto the front of a Chinese author-year clause ("正如
@@ -158,11 +166,40 @@ def canonicalize_citation(raw: str) -> str:
     - A parenthetical -> narrative reflow ("(Smith et al., 2019)" ->
       "Smith et al. (2019)") is legitimate editing, not an alteration, so
       English author-year citations collapse to "name|year".
+    - LaTeX cite commands (r"\cite{smith2020}", r"\citep{...}") keep the cite key
+      verbatim because the key is the sacred identifier.
+    - Chinese multi-author citations ("（张三、李四，2021）") collapse all
+      author names so the key remains stable across listing styles.
     """
     c = re.sub(r"\s+", " ", raw).strip()
+
+    latex = re.match(r"\\(?:cite|citep|citet)(?:\[[^\]]*\])?\{([^}]+)\}$", c)
+    if latex:
+        keys = [k.strip() for k in latex.group(1).split(",") if k.strip()]
+        if len(keys) == 1:
+            return keys[0]
+        return keys
+
+    # Chinese narrative / prose-prefix author-year: 李聪（2021）/ 正如李聪（2021）
     cm = re.match(r"([\u4e00-\u9fff]+)[（(](\d{4}[a-z]?)[）)]$", c)
     if cm:
-        return f"{cm.group(1)[-2:]}（{cm.group(2)}）"
+        authors = cm.group(1)
+        year = cm.group(2)
+        if re.search(r"[、,，和]", authors):
+            authors = re.sub(r"\s*[、,，和]\s*", "", authors)
+        else:
+            authors = authors[-2:]
+        return f"{authors}（{year}）"
+
+    # Chinese parenthetical multi-author: （张三、李四，2021）
+    cpm = re.match(
+        r"[（(]([\u4e00-\u9fff]+(?:[、,，和]\s*[\u4e00-\u9fff]+)*?)(?:等)?(?:\s*et\s+al\.?)?\s*[，,]\s*(\d{4}[a-z]?)[）)]$",
+        c,
+    )
+    if cpm:
+        authors = re.sub(r"\s*[、,，和]\s*", "", cpm.group(1))
+        return f"{authors}（{cpm.group(2)}）"
+
     em = re.match(
         r"\(?([A-Z][A-Za-zÀ-ſ'\-]+(?:\s+et\s+al\.?)?)\s*,?\s*\(?(\d{4}[a-z]?)\)?$",
         c,
@@ -173,7 +210,15 @@ def canonicalize_citation(raw: str) -> str:
 
 
 def extract_citations(text: str) -> list[str]:
-    return [canonicalize_citation(m.group(0)) for m in CITE_RE.finditer(text)]
+    out: list[str] = []
+    for m in CITE_RE.finditer(text):
+        canon = canonicalize_citation(m.group(0))
+        if isinstance(canon, list):
+            out.extend(canon)
+        else:
+            out.append(canon)
+    return out
+
 
 
 def extract_math(text: str) -> list[str]:
