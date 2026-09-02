@@ -1,13 +1,21 @@
 # Academic Humanizer (Chinese Fork)
 
-> A thin fork of [AIScientists-Dev/academic-humanizer](https://github.com/AIScientists-Dev/academic-humanizer)
-> that adds Chinese academic-writing rules and structural fixes.
+> *「AI 起草的论文你敢直接投稿吗？——每个数字、引用、术语必须一字不动。」*
 
 [![license](https://img.shields.io/badge/license-MIT-2f8f57?style=flat-square)](LICENSE)
-&nbsp;![version](https://img.shields.io/badge/version-0.5.0-2f8f57?style=flat-square)
-&nbsp;![skill](https://img.shields.io/badge/skill-papers_and_grant_proposals-1c1a15?style=flat-square)
+&nbsp;![version](https://img.shields.io/badge/version-0.5.0-2f8f57?style=flat-square)](CHANGELOG.md)
+&nbsp;![skill](https://img.shields.io/badge/skill-papers_and_grant_proposals-1c1a15?style=flat-square)](SKILL.md)
 &nbsp;![built by](https://img.shields.io/badge/built_by-NSF,_CAREER,_NIH_R01-555?style=flat-square)
 &nbsp;[![skills.sh](https://img.shields.io/badge/skills.sh-jefeerzhang%2Facademic--humanizer--zh-2f8f57?style=flat-square)](https://skills.sh/jefeerzhang/academic-humanizer-zh)
+
+> ⚠️ **场景分工**：本 skill 负责学术场景（论文 / 摘要 / 学位稿 / grant proposal / 科普段落）。
+> 通用中文（公众号 / 公文 / 商业 / 新闻 / 新媒体 / 文学）请走兄弟技能 **[`natural-chinese`](https://github.com/jefeerzhang/natural-chinese)**。
+
+**5 秒价值陈述**
+
+- **14 类**中文学术 AI 痕迹 · **6 段** grant proposal 模式 · **7 条** C0–C2 红线契约
+- `scripts/validate_red_lines.py` 把「数字没动」从口头承诺变成 CI 退出码 `0/1/2/3`
+- 每个改动都附 before/after 对照 + diff + unchanged-claim declaration
 
 ## Why we built this
 
