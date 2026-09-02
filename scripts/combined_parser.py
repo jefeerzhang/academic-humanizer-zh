@@ -17,7 +17,7 @@ AFTER_HEADING_RE = re.compile(r"^##\s+After\b", re.MULTILINE)
 META_HEADING_RE = re.compile(
     r"^#{2,6}\s*(?:"
     r"修改对照|合规清单|红线核对|注入密度核对|综合验证|场景假设|"
-    r"C0[\s–—-]*C2|Layer\s*7"
+    r"C0[\s–—-]*C2|Layer\s*7|Example notes|Change notes"
     r")",
     re.MULTILINE | re.IGNORECASE,
 )

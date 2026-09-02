@@ -3,8 +3,8 @@
 """
 run_examples.py — Audit every shipped example in `examples/` directory.
 
-A thin wrapper that iterates all `examples/*.md` files (excluding before-after.md
-which is English only and lives in the upstream's contract). For each file, run
+A thin wrapper that iterates all `examples/*.md` files. Every example uses `## Before` / `## After`
+pairs (including English `before-after.md`) so CI audits the same contract the README promises.
 both validate_red_lines.py and validate_layer7_injection.py as appropriate:
 
   - All examples: validate_red_lines.py --all-pairs
@@ -127,9 +127,7 @@ def _summarize(output: str) -> str:
 def audit_example(path: Path) -> AuditResult:
     result = AuditResult(file=str(path.relative_to(REPO_ROOT)))
 
-    # Skip files that do not follow the ## Before / ## After combined format.
-    # (Some upstream examples — e.g. examples/before-after.md — use a different
-    # layout and are not meant to be combined-audited.)
+    # All shipped examples use ## Before / ## After (see test_repo_consistency.py).
     try:
         head = path.read_text(encoding="utf-8", errors="ignore")[:4000]
     except Exception:

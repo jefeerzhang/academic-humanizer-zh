@@ -24,6 +24,7 @@ jobs:
           python scripts/test_validate_red_lines.py
           python scripts/test_combined_parser.py
           python scripts/test_validate_layer7_injection.py
+          python scripts/test_repo_consistency.py
 
   red-lines:
     name: C0–C2 red lines (validate_red_lines.py)

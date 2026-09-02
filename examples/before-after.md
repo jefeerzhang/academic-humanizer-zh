@@ -1,67 +1,54 @@
 # Before / after (academic register)
 
-**Before (AI tells + over-claim):**
+Shipped examples use `## Before` / `## After` pairs so `run_examples.py` and CI can audit C0–C2 on every language.
+
+---
+
+## Example 1 · Paper paragraph (Layers 1–4)
+
+## Before
+
 > In recent years, graph representation learning has attracted increasing attention. In this paper, we
 > propose a novel method and demonstrate through extensive experiments that it significantly outperforms
 > existing approaches, paving the way for a new paradigm. To the best of our knowledge, this is the first
 > work to delve into this crucial problem. On three citation benchmarks, focal loss reaches 0.71 minority-class
 > F1; our method reaches 0.74–0.77 F1 with majority-class accuracy within 1 point of focal loss.
 
-**After (academic-humanized):**
+## After
+
 > Existing graph methods for imbalanced node classification reweight the loss but ignore label noise. We
 > add a noise-aware reweighting term and evaluate it on three citation benchmarks, where it improves
 > minority-class F1 by 3–6 points over focal loss (0.74–0.77 vs 0.71) while leaving majority-class accuracy within 1 point.
 
-What changed: removed the formulaic opener, "novel", "extensive", "significantly" (unquantified),
-"paving the way", and "to the best of our knowledge"; downgraded "demonstrate" to "evaluate"; attached
-a range and the comparator; kept the precise factual claims.
+### Example notes
+
+Removed the formulaic opener, "novel", "extensive", "significantly" (unquantified), "paving the way",
+and "to the best of our knowledge"; downgraded "demonstrate" to "evaluate"; surfaced benchmark numbers
+already in the Before.
 
 ---
 
-## Funding-proposal mode: an NIH Specific Aims opening (Layer 6)
+## Example 2 · NIH Specific Aims opening (Layer 6)
 
-Proposals are scored from the first page, and the register differs from a paper: vision and
-feasibility are the product, so ambition is *kept* and matched to evidence rather than trimmed. This
-constructed example shows the opening move of an NIH Specific Aims page.
+## Before
 
-**Before (vague importance, method-as-aim, dominoed, no feasibility):**
-> Early detection of sepsis is a very important and timely problem with many applications. In this
-> proposal we will explore whether machine learning might possibly help. Aim 1: apply our model to ICU
-> data. Aim 2: extend Aim 1 to multi-site data. Aim 3: if Aims 1–2 succeed, run a pilot. This work will
-> be groundbreaking and have a large impact on the field.
+> Early detection of sepsis is a very important and timely problem with many applications. In this proposal we will explore whether machine learning might possibly help. Aim 1: apply our model to ICU data. Aim 2: extend the ICU analysis to multi-site data. Aim 3: if the first two aims succeed, run a pilot. This work will be groundbreaking and have a large impact on the field.
 
-**After (gap + central commitment + parallel, outcome-framed aims + payoff + feasibility):**
-> Sepsis is treatable when caught early, yet bedside scores fire too late and too often, so clinicians
-> cannot tell a true alarm from noise. **The objective of this application is** to deliver an early-warning
-> model whose alerts are calibrated and transferable enough to act on. Our central hypothesis, supported by
-> our preliminary single-site results (Fig. 1), is that fusing continuous vital-sign trends with routine
-> labs detects deterioration hours earlier without raising the false-alarm rate.
-> **Aim 1: Establish** the detection-vs-false-alarm limit on retrospective ICU data and a model that
-> approaches it, with calibration quantified by a proper scoring rule.
-> **Aim 2: Determine** whether adding routine labs to vital-sign trends improves early detection, and for
-> which patient subgroups it helps or hurts.
-> **Aim 3: Quantify** how alert calibration transfers across sites, using a prospectively held-out hospital.
-> The aims are independent: each yields a usable result on its own. **Impact:** a calibrated, transferable
-> early-warning tool, evaluated with two partner hospitals (letters enclosed).
+## After
 
-What changed: replaced "very important and timely … many applications" with the specific clinical gap and
-its cost; turned the hedged central claim into a falsifiable hypothesis tied to preliminary data; rewrote
-method-as-aims into outcome-framed aims and removed the Aim-3-depends-on-1-and-2 domino (now parallel);
-named a concrete rigor anchor (a proper scoring rule for calibration); replaced "groundbreaking … large
-impact" with a concrete payoff and feasibility evidence (preliminary figure, partner letters). The
-ambition stayed, and it is now backed. *(This example is generic; in real use, cite only the PI's own
-record, and never invent preliminary data, funding, or letters.)*
+> Sepsis is treatable when caught early, yet bedside scores fire too late and too often, so clinicians cannot tell a true alarm from noise. The objective of this application is to deliver an early-warning model whose alerts are calibrated and transferable enough to act on. Our central hypothesis, supported by our preliminary single-site results (Figure 1), is that fusing continuous vital-sign trends with routine labs detects deterioration hours earlier without raising the false-alarm rate. Aim 1: Establish the detection-vs-false-alarm limit on retrospective ICU data and a model that approaches it, with calibration quantified by a proper scoring rule. Aim 2: Determine whether adding routine labs to vital-sign trends improves early detection, and for which patient subgroups it helps or hurts. Aim 3: Quantify how alert calibration transfers across sites, using a prospectively held-out hospital; the aims are independent: each yields a usable result on its own; Impact: a calibrated, transferable early-warning tool, evaluated with two partner hospitals (letters enclosed).
+
+### Example notes
+
+Constructed example; in real use, cite only the PI's own record, and never invent preliminary data,
+funding, or letters.
 
 ---
 
-## Funding-proposal mode: an NSF CAREER Project Summary (Layer 6)
+## Example 3 · NSF CAREER Project Summary (Layer 6)
 
-Here the **"after" is adapted from a real, funded NSF CAREER Project Summary** (used with permission);
-the "before" is a synthetic AI-generated draft of the same idea. It shows the proposal register at work:
-the long-term vision and the three-layer ambition are *kept* (they belong in a proposal), while the AI
-tells are stripped and the gap and payoff are made concrete.
+## Before
 
-**Before (AI-generated; vision drowned in tells):**
 > In recent years, artificial intelligence has attracted increasing attention and achieved remarkable
 > success across a wide range of domains. However, despite these advances, continual learning remains a
 > crucial and pivotal challenge of paramount importance. In this proposal, we propose a novel and
@@ -71,7 +58,8 @@ tells are stripped and the gap and payoff are made concrete.
 > field. Through extensive experiments, we will demonstrate that our groundbreaking approach significantly
 > outperforms existing methods. Our educational plan will also foster the next generation of researchers.
 
-**After (adapted from a funded NSF CAREER Project Summary, Overview):**
+## After
+
 > As data and learning environments expand, the value of AI depends on its ability to scale and adapt.
 > Continual learning addresses this: a learner that maintains performance on old tasks while integrating
 > new information, adapts to new environments by recollecting past knowledge, and actively solicits side
@@ -84,10 +72,7 @@ tells are stripped and the gap and payoff are made concrete.
 > demonstrated on autonomous driving and cellular performance management. An integrated education plan
 > trains the next generation of data scientists through new STEM programs and an open-source platform.
 
-What changed: cut the formulaic opener and the AI vocabulary (delve, intricate, seamless, leverage,
-cutting-edge); removed the over-claims (novel, groundbreaking, revolutionize, "to the best of our
-knowledge", "significantly outperforms" with no evidence); replaced "paramount importance" with the
-concrete gap (methods are empirical, principles unclear) and its cost (reliability, progress). What was
-**preserved** is exactly what a paper layer would over-trim but a proposal needs: the long-term vision,
-the three-layer framework, the named demonstration domains, and the integrated education plan. In
-proposal mode, ambition stays; it is just made specific and credible.
+### Example notes
+
+After adapted from a funded NSF CAREER Project Summary (used with permission); Before is synthetic.
+Cut formulaic openers and AI vocabulary; preserved proposal register (vision, framework, domains, education).
