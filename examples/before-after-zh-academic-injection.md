@@ -148,16 +148,16 @@ Verify with:
 ## 综合验证
 
 ```bash
-# C0–C2 红线（兜底）
-python scripts/validate_red_lines.py examples/before-after-zh-academic-injection.md --combined
-# 期望：exit 0（PASS）
+# 一次性跑完所有 examples（含本文件的三个示例对 + Layer 7 注入审计）
+python scripts/run_examples.py
+# 期望：exit 0（PASS）或 exit 1（WARN，不阻塞）
 
-# Layer 7 注入密度
-python scripts/validate_layer7_injection.py examples/before-after-zh-academic-injection.md --combined
-# 期望：exit 0（PASS）
+# 单文件调试：
+python scripts/validate_red_lines.py --combined --all-pairs examples/before-after-zh-academic-injection.md
+python scripts/validate_layer7_injection.py --combined examples/before-after-zh-academic-injection.md
 ```
 
-**两个退出码都为 0 → Layer 7 启用下的学术注入契约成立**。
+**全部退出码 ≤ 1 → Layer 7 启用下的学术注入契约成立**。
 
 ---
 

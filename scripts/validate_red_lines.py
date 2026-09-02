@@ -351,58 +351,96 @@ def split_combined(text: str) -> tuple[str, str]:
     This strips any frontmatter and any meta sections (场景假设 / 修改对照 /
     合规清单 / 总结 etc.) so the audit compares only the editable prose.
     """
-    # Stdin literal marker always wins
-    if "<<<AFTER>>>" in text:
-        before, after = text.split("<<<AFTER>>>", 1)
-        return before.strip(), after.strip()
-
-    bm = re.search(r"^##\s+Before\b", text, flags=re.MULTILINE)
-    am = re.search(r"^##\s+After\b", text, flags=re.MULTILINE)
-    if not (bm and am and bm.start() < am.start()):
+    pairs = list(split_combined_all(text))
+    if not pairs:
         raise ValueError(
             "Could not find both '## Before' and '## After' headings. "
             "Use --before/--after, or separate stdin with a line "
             "containing '<<<AFTER>>>'."
         )
+    return pairs[0]
 
-    before = text[bm.start(): am.start()]
-    before = re.sub(r"^##\s+Before.*$", "", before, count=1, flags=re.MULTILINE).strip()
 
-    next_h = re.search(r"^##\s+", text[am.end():], flags=re.MULTILINE)
-    after_end = am.end() + next_h.start() if next_h else len(text)
-    after = text[am.start(): after_end]
-    after = re.sub(r"^##\s+After.*$", "", after, count=1, flags=re.MULTILINE).strip()
+def split_combined_all(text: str) -> list[tuple[str, str]]:
+    """Return ALL (before, after) pairs found in a combined markdown file.
 
-    return before, after
+    Used by --all-pairs. Each pair is the span from a '## Before' heading
+    up to (but excluding) the next '## After' heading, and from that
+    '## After' heading up to the next '## ' heading.
+
+    Stdin literal marker '<<<AFTER>>>' is treated as a single pair and
+    short-circuits (it is not repeated).
+    """
+    if "<<<AFTER>>>" in text:
+        before, after = text.split("<<<AFTER>>>", 1)
+        return [(before.strip(), after.strip())]
+
+    pairs: list[tuple[str, str]] = []
+    before_matches = list(re.finditer(r"^##\s+Before\b", text, flags=re.MULTILINE))
+    after_matches = list(re.finditer(r"^##\s+After\b", text, flags=re.MULTILINE))
+
+    for bm in before_matches:
+        am = next((m for m in after_matches if m.start() > bm.start()), None)
+        if am is None:
+            continue
+        before_body = text[bm.start(): am.start()]
+        before_body = re.sub(r"^##\s+Before.*$", "", before_body, count=1, flags=re.MULTILINE).strip()
+
+        next_h = re.search(r"^##\s", text[am.end():], flags=re.MULTILINE)
+        after_end = am.end() + next_h.start() if next_h else len(text)
+        after_body = text[am.start(): after_end]
+        after_body = re.sub(r"^##\s+After.*$", "", after_body, count=1, flags=re.MULTILINE).strip()
+
+        pairs.append((before_body, after_body))
+    return pairs
 
 
 def main() -> int:
     p = argparse.ArgumentParser(description=__doc__.splitlines()[1])
-    p.add_argument("combined", nargs="?", help="Single file with ## Before / ## After")
+    p.add_argument("combined", nargs="?", help="Single file with ## Before / ## After (positional alias of --combined)")
+    p.add_argument("--combined", dest="combined_flag", nargs="?", const=None, default=None, help="Single file with ## Before / ## After. Without a value, falls back to the positional combined argument.")
+    p.add_argument("--all-pairs", action="store_true", help="When using a combined file, audit every ## Before / ## After pair (default: first pair only)")
     p.add_argument("--before", help="Before text file")
     p.add_argument("--after", help="After text file")
     p.add_argument("--json", action="store_true", help="Emit JSON instead of human report")
     p.add_argument("--quiet", action="store_true", help="Suppress info-level findings in human mode")
     args = p.parse_args()
 
+    combined_path = args.combined_flag or args.combined
+
     if args.before and args.after:
         before = Path(args.before).read_text(encoding="utf-8")
         after = Path(args.after).read_text(encoding="utf-8")
-    elif args.combined == "-":
+        pairs = [(before, after)]
+    elif combined_path == "-":
         text = sys.stdin.read()
-        before, after = split_combined(text)
-    elif args.combined:
-        text = Path(args.combined).read_text(encoding="utf-8")
-        before, after = split_combined(text)
+        pairs = list(split_combined_all(text))
+    elif combined_path:
+        text = Path(combined_path).read_text(encoding="utf-8")
+        pairs = list(split_combined_all(text))
     else:
-        p.error("Provide a combined file, or --before / --after pair.")
+        p.error("Provide a combined file (positional or --combined), or --before / --after pair.")
 
-    findings = compare_texts(before, after)
+    if not pairs:
+        print("validate_red_lines: no ## Before / ## After pairs found", file=sys.stderr)
+        return 3
+
+    if not args.all_pairs and len(pairs) > 1:
+        # Backward-compatible: silently audit only the first pair unless --all-pairs is passed
+        pairs = pairs[:1]
+
+    all_findings: list[Finding] = []
+    for idx, (before, after) in enumerate(pairs, start=1):
+        findings = compare_texts(before, after)
+        if len(pairs) > 1:
+            for f in findings:
+                f.rule = f"{f.rule}#{idx}"
+        all_findings.extend(findings)
 
     if args.json:
-        print(json.dumps([asdict(f) for f in findings], ensure_ascii=False, indent=2))
+        print(json.dumps([asdict(f) for f in all_findings], ensure_ascii=False, indent=2))
     else:
-        for f in findings:
+        for f in all_findings:
             if args.quiet and f.severity == "info":
                 continue
             tag = {"fail": "❌ FAIL", "warn": "⚠️  WARN", "info": "✅ INFO"}.get(f.severity, f.severity)
@@ -412,8 +450,8 @@ def main() -> int:
                 if detail:
                     print(f"        {json.dumps(detail, ensure_ascii=False)}")
 
-    has_fail = any(f.severity == "fail" for f in findings)
-    has_warn = any(f.severity == "warn" for f in findings)
+    has_fail = any(f.severity == "fail" for f in all_findings)
+    has_warn = any(f.severity == "warn" for f in all_findings)
     return 2 if has_fail else (1 if has_warn else 0)
 
 
