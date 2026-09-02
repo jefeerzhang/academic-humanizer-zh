@@ -11,6 +11,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from validate_layer7_injection import (
     FORBIDDEN_SECTIONS,
     audit_pair,
+    check_blacklist,
     check_hedging,
     sectionize,
 )
@@ -91,6 +92,38 @@ class TestHedgingDensity(unittest.TestCase):
         findings, _, _ = check_hedging(after, sections)
         fails = [f for f in findings if f.severity == "FAIL"]
         self.assertTrue(any("§结果" in f.message for f in fails))
+
+
+class TestBlacklist(unittest.TestCase):
+    """L7.3 blacklist: CJK has no word boundary, so \b before 挺 is unreliable."""
+
+    def _fails(self, text: str) -> list:
+        return [f for f in check_blacklist(text) if f.severity == "FAIL"]
+
+    def test_ting_after_cjk_still_matched(self):
+        # 挺好 preceded by a CJK char must still be caught (no \b boundary in CJK).
+        self.assertEqual(len(self._fails("这挺好")), 1, msg="这挺好 not flagged")
+        self.assertEqual(len(self._fails("效果挺好")), 1)
+        self.assertEqual(len(self._fails("都挺好")), 1)
+
+    def test_ting_common_forms(self):
+        for s in ["挺好", "挺多", "挺不错", "挺不错"]:
+            self.assertEqual(len(self._fails(s)), 1, msg=s)
+
+    def test_man_common_forms_full_token(self):
+        # 蛮不错 must match as the full token, not a fragment "蛮不".
+        for s in ["蛮好", "蛮不错", "这蛮不错"]:
+            fails = self._fails(s)
+            self.assertEqual(len(fails), 1, msg=s)
+            self.assertIn(fails[0].evidence, ("蛮好", "蛮不错"), msg=fails[0].evidence)
+
+    def test_man_bi_jiang_li_not_false_positive(self):
+        # 蛮不讲理 uses 蛮=willful (蛮横), not the casual intensifier => NOT a trap.
+        self.assertEqual(self._fails("蛮不讲理"), [])
+
+    def test_non_colloquial_not_flagged(self):
+        for s in ["还不错", "很好", "相当好", "很好"]:
+            self.assertEqual(self._fails(s), [], msg=s)
 
 
 class TestCombinedIntegration(unittest.TestCase):

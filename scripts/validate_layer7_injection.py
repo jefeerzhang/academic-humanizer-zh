@@ -77,7 +77,9 @@ BLACKLIST_PATTERNS = [
     r"🔥|💡|👍|✨|🌟|⭐|💯|🎉|🤖",
     r"绝绝子|家人们|YYDS|绝美|绝绝",
     r"(?:^|[^笔本研])我(?:觉得|感觉|想|倾向)",
-    r"\b挺(?:好|多|不)|蛮(?:好|不)",
+    # no \b: CJK has no word boundary, so a leading \b misses 挺 after a CJK char.
+    # Match complete tokens only (avoid fragmenting 蛮不错 / false-flagging 蛮不讲理).
+    r"挺(?:好|多|不错)|蛮(?:好|不错)",
 ]
 BLACKLIST_RE = re.compile("|".join(BLACKLIST_PATTERNS))
 
