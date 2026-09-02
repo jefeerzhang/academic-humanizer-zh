@@ -7,6 +7,7 @@
 &nbsp;![version](https://img.shields.io/badge/version-0.5.0-2f8f57?style=flat-square)
 &nbsp;![skill](https://img.shields.io/badge/skill-papers_and_grant_proposals-1c1a15?style=flat-square)
 &nbsp;![built by](https://img.shields.io/badge/built_by-NSF,_CAREER,_NIH_R01-555?style=flat-square)
+&nbsp;[![skills.sh](https://img.shields.io/badge/skills.sh-jefeerzhang%2Facademic--humanizer--zh-2f8f57?style=flat-square)](https://skills.sh/jefeerzhang/academic-humanizer-zh)
 
 ## Why we built this
 
@@ -111,6 +112,8 @@ agent can load the heavy catalogs on demand.
 ## Install
 
 ```bash
+# Claude Code / Codex / OpenCode / Cline / Cursor / Windsurf — pick one:
+npx skills add jefeerzhang/academic-humanizer-zh --global    # or:
 git clone https://github.com/jefeerzhang/academic-humanizer-zh ~/.claude/skills/academic-humanizer-zh
 ```
 
