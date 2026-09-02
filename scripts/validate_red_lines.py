@@ -111,7 +111,33 @@ NAMED_TERMS = [
     "resnet", "vit", "bert", "gpt", "llm",
     "选择实验", "离散选择", "条件 logit", "混合 logit", "潜在类别",
     "双重差分", "倾向得分匹配",
+    "碳标签", "碳标识",
 ]
+
+# Single-word English terms that need word-boundary + negation-context awareness.
+# Multi-word terms (e.g. "discrete choice experiment") and Chinese terms are
+# unaffected: spaces and CJK characters provide natural boundaries.
+_SHORT_TERMS = {
+    "auroc", "auprc", "rmse", "mae", "mse",
+    "ols", "wls", "gls", "did", "twfe", "psm", "iv", "rd", "rdid",
+    "resnet", "vit", "bert", "gpt", "llm",
+}
+
+# Words/patterns that, when FOLLOWING a short term, signal English common usage
+# (verbs / particles / pronouns) rather than a named method. The check is
+# applied to text AFTER the term, because English "did" + verb is verb usage
+# ("did observe", "did not", "did so"), while "did" as a method name stands
+# alone or is followed by methodology tokens ("DID was used", "applied DID").
+_NEGATION_SUFFIXES = (
+    # Negation / auxiliary
+    "not ", "n't", "n't ",
+    # Pronouns / particles that follow "did"
+    " so", " it", " this", " that",
+    " you", " we", " i ", " they", " he ", " she ",
+    # Common academic verbs that "did" can take
+    " observe", " see", " find", " show", " suggest",
+    " indicate", " demonstrate", " note ", " mention",
+)
 
 
 def extract_numbers(text: str) -> list[str]:
@@ -159,10 +185,34 @@ def extract_dates(text: str) -> list[str]:
 
 
 def extract_named_terms(text: str) -> list[str]:
-    lower = text.lower()
-    found = []
+    """Extract named methods/metrics with word-boundary + negation-context awareness.
+
+    - Multi-word English terms (e.g. "discrete choice experiment") are matched
+      as phrases — internal spaces give natural boundaries.
+    - Chinese terms are matched literally — CJK characters provide boundaries.
+    - Single-word English terms (did, ols, gpt, etc.) use \\b word boundaries
+      AND are skipped when preceded by an English negation or auxiliary verb
+      ("did not", "didn't", "is not", etc.) so common verbs do not trigger
+      false C2 red-line violations.
+    """
+    found: list[str] = []
     for term in NAMED_TERMS:
-        if term.lower() in lower:
+        if term not in _SHORT_TERMS:
+            # Multi-word phrase or Chinese term: simple substring match.
+            if term.lower() in text.lower():
+                found.append(term)
+            continue
+        # Short single-word English term: word-boundary + suffix-context.
+        pattern = re.compile(r"\b" + re.escape(term) + r"\b", flags=re.IGNORECASE)
+        accepted = False
+        for m in pattern.finditer(text):
+            following = text[m.end():m.end() + 14].lower()
+            following = " " + following  # ensure leading space so "so" doesn't match in "used"
+            if any(suf in following for suf in _NEGATION_SUFFIXES):
+                continue
+            accepted = True
+            break  # one hit per term is enough
+        if accepted:
             found.append(term)
     return found
 
