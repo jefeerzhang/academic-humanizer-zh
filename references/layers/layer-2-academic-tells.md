@@ -2,6 +2,7 @@
 
 > Loaded by `SKILL.md` Layer 2 only when the editor needs the full pattern catalog.
 > SKILL.md carries the contract and a one-line reminder; this file is the working catalog.
+> **C0 guard:** numbers in "After" examples assume they already appear in the author's tables or Before text — never invent magnitudes.
 
 ## 2.1 Over-claiming verbs
 Empirical work *shows* and *provides evidence*; it does not *prove* or *demonstrate* universal truths.

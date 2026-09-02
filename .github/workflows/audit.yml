@@ -10,7 +10,21 @@ permissions:
   contents: read
 
 jobs:
-  # C0–C2 red-line audit. Exit 0 must pass; any non-zero fails the build.
+  unit-tests:
+    name: Unit tests (scripts/test_*.py)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run unit tests
+        run: |
+          set -e
+          python scripts/test_validate_red_lines.py
+          python scripts/test_combined_parser.py
+          python scripts/test_validate_layer7_injection.py
+
   red-lines:
     name: C0–C2 red lines (validate_red_lines.py)
     runs-on: ubuntu-latest
@@ -19,13 +33,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Smoke test on shipped examples
+      - name: Audit all combined examples
         run: |
           set -e
-          python scripts/validate_red_lines.py examples/before-after-zh-academic.md
-          python scripts/validate_red_lines.py examples/before-after-tri-research-report-zh.md
+          python scripts/run_examples.py
 
-  # Layer 7 injection audit. Exit 0/1 (PASS/WARN) pass; exit 2 (FAIL) blocks.
   layer7:
     name: Layer 7 injection (validate_layer7_injection.py)
     runs-on: ubuntu-latest
@@ -34,18 +46,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Run Layer 7 audit on shipped example
+      - name: Run Layer 7 audit on injection example (all pairs)
         run: |
-          set +e
-          python scripts/validate_layer7_injection.py --combined examples/before-after-zh-academic-injection.md
-          rc=$?
           set -e
-          if [ $rc -eq 2 ]; then
-            echo "::error::Layer 7 audit FAIL (exit 2) — first-person abuse / hedge in Results / blacklist hit"
-            exit 2
-          fi
-          if [ $rc -eq 1 ]; then
-            echo "::warning::Layer 7 audit returned WARN (exit 1) — contract honored but soft warning emitted"
-            exit 0
-          fi
-          exit $rc
+          python scripts/validate_layer7_injection.py --combined --all-pairs examples/before-after-zh-academic-injection.md

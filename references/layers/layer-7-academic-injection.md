@@ -120,6 +120,8 @@ This file is loaded ON DEMAND. Do not edit SKILL.md or rules-zh.md contracts bec
 
 ## 7.6 启用判据（决策树）
 
+与 `SKILL.md` "Document-style routing" **一致**——无「询问用户」分支：
+
 ```
 [输入段落]
     │
@@ -129,13 +131,12 @@ This file is loaded ON DEMAND. Do not edit SKILL.md or rules-zh.md contracts bec
     ├── 含 grant 标志（NIH/NSF/fellowship）──→ ❌ Layer 7 不启用
     │                                              仅跑 Layer 1–6 + Layer 6 grant mode
     │
-    ├── 用户口头说"摘要松一松 / 科普段落自然化" ──→ ✅ 强制启用
-    │                                                       提示用户："已启用 Layer 7 学术注入层；
-    │                                                       仅注入 cognitive hedging + 第一人称限密度。"
+    ├── 用户口头说"摘要松一松 / 科普段落自然化" ──→ ✅ 强制启用 Layer 7
     │
-    ├── 自动检测到社科/人文/科普段 ──→ ⚠️ 询问用户是否启用
-    │                                              「这段含'摘要/政策含义/研究方法'等学术段标记，
-    │                                               是否启用 Layer 7 注入 cognitive hedging？」
+    ├── 自动检测到社科/人文/科普段（摘要/政策含义/研究方法等标记，无硬标志）──→ ✅ 自动启用 Layer 7
+    │       · Layer 7 **加载**（rules + 审计器激活）
+    │       · **注入**（hedging + 笔者认为）仅落 Discussion / Conclusion / Limitations / 政策含义
+    │       · 引言 / 摘要主体：仅 C7 清机器味，**不注入**
     │
     └── 其他（无学术标记、无 grant、无硬标志）──→ ❌ 默认不启用
                                                           考虑重路由到 sibling skill `natural-chinese`

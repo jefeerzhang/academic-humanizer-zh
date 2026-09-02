@@ -150,7 +150,7 @@ def audit_example(path: Path) -> AuditResult:
     # Layer 7 audit (only for examples that exercise Layer 7)
     if _needs_layer7(path):
         rc7, out7 = _run(
-            [sys.executable, str(LAYER7), "--combined", str(path)],
+            [sys.executable, str(LAYER7), "--combined", "--all-pairs", str(path)],
             timeout=60,
         )
         result.layer7_exit = rc7

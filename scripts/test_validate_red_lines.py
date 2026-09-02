@@ -109,6 +109,12 @@ class TestRedLines(unittest.TestCase):
         findings = self.audit(before, after)
         self.assertEqual(severity_of(findings, "C1 sentences"), "warn")
 
+    def test_year_range_not_split_into_fragments(self):
+        from validate_red_lines import extract_numbers
+        nums = extract_numbers("考察 2020–2025 年间欧盟政策")
+        self.assertIn("2020–2025", nums)
+        self.assertNotIn("202", nums)
+
     def test_sentence_split_counts_chinese_terminators(self):
         self.assertEqual(len(extract_sentences("第一句。第二句。第三句！")), 3)
 

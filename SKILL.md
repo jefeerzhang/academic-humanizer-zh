@@ -40,11 +40,13 @@ every number, result, and citation; not a tool for evading AI-use disclosure.
 
 Editing or reviewing academic prose: paper sections, abstracts, rebuttals, related work,
 and **funding proposals** (NSF, NIH Specific Aims, fellowship / foundation proposals;
-see Layer 6). **Not** for blogs, marketing, or personal essays, and **never** injects
-opinion, humor, or first-person "personality" into a manuscript. For technical writing,
-neutral and precise *is* the human voice. Proposals have a different register from papers
-— ambition language a paper would trim is appropriate there; apply Layer 6, not the
-paper layers' stricter trimming, to vision statements.
+see Layer 6). **Not** for blogs, marketing, or personal essays. Do **not** inject
+colloquial first-person voice (`我觉得`, humor, emoji personality) into a manuscript;
+preserve whitelisted scholarly `we` / `本研究`, and apply Layer 7's ≤1 academic hedge-person
+(`笔者认为`) only in Discussion / Conclusion / Limitations when Layer 7 injection is active.
+For technical writing, neutral and precise *is* the human voice. Proposals have a different
+register from papers — ambition language a paper would trim is appropriate there; apply
+Layer 6, not the paper layers' stricter trimming, to vision statements.
 
 ## Core principle
 
@@ -115,7 +117,7 @@ Beyond language, route by **document style** — the layer that should run.
 |---|---|
 | Hard academic markers (`\cite{}` / `\citep{}` / `\begin{equation}` / `p < 0.0x` / `n = xxx` / `.bib` pointer) | **Layer 1–6 + C7** (full academic pass); **Layer 7 NOT activated** |
 | Grant proposal markers (NIH Aims / NSF Project Summary / fellowship structure) | **Layer 1–6 + Layer 6 grant mode + C7**; **Layer 7 NOT activated** |
-| Continuous Chinese paragraph(s) with academic cues ("摘要" / "本文提出" / "研究表明" / "研究方法" / "政策含义") but **no** hard-academic markers | **Layer 1–5 + C7 + Layer 7 (Academic Injection Layer)** — bridges `natural-chinese`'s "破+立双轨" with academic filtering (cognitive hedging + first-person limiting) |
+| Continuous Chinese paragraph(s) with academic cues ("摘要" / "本文提出" / "研究表明" / "研究方法" / "政策含义") but **no** hard-academic markers | **Layer 1–5 + C7 + Layer 7 loaded** — cognitive hedging + first-person limiting **inject only in Discussion / Conclusion / Limitations / 政策含义**; intro/摘要 get C7 cleanup only |
 | User explicitly says "摘要松一松" / "科普段落自然化" / "不要太死板" | **Force-activate Layer 7**, regardless of auto-detection |
 | Non-academic Chinese (公众号 / 公文 / 商业 / 新闻 / 文学) | **Defer to sibling skill [`natural-chinese`](https://github.com/jefeerzhang/natural-chinese)** — this skill does not edit |
 
@@ -187,19 +189,21 @@ A general humanizer flattens legitimate scholarly constructs. Keep them.
 For every empirical claim, check (a) is it backed by a number, figure, table, or citation
 in the text, and (b) does the verb match the strength of that evidence?
 
+**C0 boundary:** Layer 4 may **surface numbers already present** in the manuscript (text,
+tables, figures, cited work). If no number exists → **soften the verb** or **add an evidence
+pointer** (`Table 2`, `Figure 3`), never fabricate a magnitude.
+
 - **Unbacked claim → add the evidence pointer or soften.**
-  *Before:* *Our method is more robust.*  *After:* *Our method's accuracy drops by 2
-  points under distribution shift, versus 11 points for the baseline (Figure 3).*
+  *Before:* *Our method is more robust.*  *After:* *Our method's accuracy is more stable
+  under distribution shift than the baseline (Figure 3).* (Figure 3 must already exist.)
 - **Verb stronger than evidence → downgrade.**
   *Before:* *This demonstrates that our method is universally superior.*
   *After:* *On these three datasets, our method matches or exceeds the strongest baseline
   (Table 2).*
-- **Vague magnitude → a number or RANGE, attributed.**
-  *Before:* *a large improvement.*  *After:* *a 2–6% improvement in balanced accuracy
-  over the strongest baseline.* Prefer ranges (e.g., "2–6%") over single averaged values
-  unless the averaging method is stated, and attribute each number to its method, metric,
-  and baseline. When comparing, lead with the comparison against the strongest competitor,
-  not the trivial baseline.
+- **Vague magnitude when a number already appears elsewhere → surface it with attribution.**
+  *Before:* *a large improvement* (Table 2 reports 2–6%).  *After:* *a 2–6% improvement
+  in balanced accuracy over the strongest baseline (Table 2).* Prefer ranges over single
+  averaged values unless the averaging method is stated.
 
 ---
 
@@ -239,7 +243,8 @@ of editing the wrong thing:
 - **`.tex` with mostly equations and macros** → edit only the prose inside the document
   text regions; never touch math environments, `\cite{}`, `\ref{}`, `\label{}`.
 - **Reviewer comments / rebuttal letter** → switch to **rebuttal mode** (politeness +
-  point-by-point structure); do not apply paper tightening.
+  point-by-point structure); do not apply paper tightening or Layer 7 injection. Preserve
+  author `we` / `本研究`; edit for clarity and tone only.
 - **Cover letter, response-to-reviewers, conference summary** → keep professional
   register; do not strip "we respectfully" politeness as AI fluff.
 - **Non-academic text (blog, marketing, README, chat)** → refuse and explain why.

@@ -33,9 +33,10 @@ One combined markdown with ## Before / ## After headings:
 
     python3 scripts/validate_red_lines.py examples/before-after-zh-academic.md
 
-The script splits on the first ## Before and the next ## After, and only
-audits the editable prose span between them. Meta sections (场景假设 /
-修改对照 / 合规清单 / 总结) are skipped automatically.
+The script splits on the first ## Before and the next ## After, and stops
+before meta subsections (### 修改对照 / C0–C2 核对 / Layer 7 密度核对) or the
+next ## heading. Use --all-pairs to audit every pair in multi-example files.
+Parsing logic lives in `scripts/combined_parser.py` (shared with Layer 7 auditor).
 
 Stdin, two blobs separated by <<<AFTER>>>:
 
@@ -60,26 +61,27 @@ Stdin, two blobs separated by <<<AFTER>>>:
 ### Regression tests
 
     python scripts/test_validate_red_lines.py
+    python scripts/test_combined_parser.py
+    python scripts/test_validate_layer7_injection.py
 
 Covers the known failure modes: duplicated numbers halved, Chinese full-width
-citations（李聪（2021）/ （李聪，2021）), citation reflow vs swap, and
-Chinese sentence-merge drift.
+citations（李聪（2021）/ （李聪，2021）), citation reflow vs swap, year-range
+parsing (2020–2025), combined-parser meta-boundary stripping, and Layer 7
+section detection / short-text density.
 
 ### Smoke test
 
-    python3 scripts/validate_red_lines.py examples/before-after-zh-academic.md
-    python3 scripts/validate_red_lines.py examples/before-after-tri-research-report-zh.md
+    python scripts/run_examples.py
 
-Both shipped examples should exit 0.
+Audits every combined example with `validate_red_lines.py --all-pairs` and
+`validate_layer7_injection.py --all-pairs` where applicable. Exit 0 required.
 
 ### Extending
 
 - Field-specific named terms: append to the NAMED_TERMS list in the script.
-- Stricter p-value rule: by default, the script allows new p-values in the
-  after (because adding a missing *p* < 0.05 is the kind of legitimate
-  enhancement SKILL.md Layer 4 calls for). If your venue forbids this, tighten
-  `extract_pvals()` — it lives behind the `extract_features()` seam;
-  `compare()` diffs FeatureSets and never sees text.
+- Stricter p-value rule: new p-values in the after text trigger WARN (C0 — do not invent
+  statistics). Layer 4 may surface an existing significance statement with notation only
+  when the claim was already in the before text.
 
 ### Limitations
 
