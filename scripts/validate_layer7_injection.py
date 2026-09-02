@@ -17,8 +17,8 @@ honors the Layer 7 contract:
   L7.4  Delegates C0–C2 red lines to validate_red_lines.py (exit 0).
 
 Usage:
-    # Two files:
-    python3 scripts/validate_layer7_injection.py after.md before.md
+    # Two files (BEFORE first, AFTER second — same order as validate_red_lines.py):
+    python3 scripts/validate_layer7_injection.py before.md after.md
 
     # One combined markdown with "## Before" and "## After":
     python3 scripts/validate_layer7_injection.py --combined example.md
@@ -391,7 +391,7 @@ def read_input(path: str | None, combined: bool) -> tuple[str, str]:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    ap.add_argument("files", nargs="*", help="after.md [before.md] (omit if --combined or stdin)")
+    ap.add_argument("files", nargs="*", help="before.md [after.md] (omit if --combined or stdin). Order matches validate_red_lines.py.")
     ap.add_argument("--combined", action="store_true", help="parse single markdown with ## Before / ## After")
     ap.add_argument("--force", action="store_true", help="audit even if Layer 7 activation markers absent")
     ap.add_argument("--json", action="store_true", help="emit JSON report")
@@ -404,12 +404,14 @@ def main() -> int:
             return 2
         before, after = read_input(args.files[0], combined=True)
     elif len(args.files) == 2:
-        after = Path(args.files[0]).read_text(encoding="utf-8")
-        before = Path(args.files[1]).read_text(encoding="utf-8")
+        # Order matches validate_red_lines.py: BEFORE first, AFTER second.
+        before = Path(args.files[0]).read_text(encoding="utf-8")
+        after = Path(args.files[1]).read_text(encoding="utf-8")
     elif len(args.files) == 1:
-        # Single file = the AFTER text. Audit it as-is.
-        after = Path(args.files[0]).read_text(encoding="utf-8")
-        before = ""
+        # Single file = the BEFORE text (or the AFTER text if --after explicitly
+        # given). Audit it as-is with no AFTER comparison.
+        before = Path(args.files[0]).read_text(encoding="utf-8")
+        after = ""
     else:
         before, after = read_input(None, combined=False)
 
