@@ -7,6 +7,7 @@
 &nbsp;![skill](https://img.shields.io/badge/skill-papers_and_grant_proposals-1c1a15?style=flat-square)](SKILL.md)
 &nbsp;![built by](https://img.shields.io/badge/built_by-NSF,_CAREER,_NIH_R01-555?style=flat-square)
 &nbsp;[![skills.sh](https://img.shields.io/badge/skills.sh-jefeerzhang%2Facademic--humanizer--zh-2f8f57?style=flat-square)](https://skills.sh/jefeerzhang/academic-humanizer-zh)
+&nbsp;[![audit](https://github.com/jefeerzhang/academic-humanizer-zh/actions/workflows/audit.yml/badge.svg)](../../actions/workflows/audit.yml)
 
 > ⚠️ **场景分工**：本 skill 负责学术场景（论文 / 摘要 / 学位稿 / grant proposal / 科普段落）。
 > 通用中文（公众号 / 公文 / 商业 / 新闻 / 新媒体 / 文学）请走兄弟技能 **[`natural-chinese`](https://github.com/jefeerzhang/natural-chinese)**。
