@@ -1,20 +1,9 @@
 # academic-humanizer-zh
 
-Chinese fork of [AIScientists-Dev/academic-humanizer](https://github.com/AIScientists-Dev/academic-humanizer)，
-为中文学术写作（论文、学位论文、rebuttal、审稿）与基金申请书添加规则与结构性修正。
+Chinese fork of [AIScientists-Dev/academic-humanizer](https://github.com/AIScientists-Dev/academic-humanizer) for editing AI-assisted academic prose (papers, theses, rebuttals, reviews) and grant proposals.
 
-## Agent skills
+## Agent pointers
 
-### Issue tracker
-
-Issues 存放在 GitHub Issues（jefeerzhang/academic-humanizer-zh），通过 gh CLI 操作。See `docs/agents/issue-tracker.md`.
-
-### Triage labels
-
-默认五 role 词汇表（needs-triage / needs-info / ready-for-agent / ready-for-human / wontfix）。
-Canonical 定义在 **`.github/triage-labels.json`**；映射说明见 `docs/agents/triage-labels.md`。
-同步到 GitHub：`python scripts/sync_triage_labels.py`（需 `gh` 已登录）。
-
-### Domain docs
-
-Single-context：repo 根目录 CONTEXT.md + docs/adr/。See `docs/agents/domain.md`.
+- **Filing, reading, or triaging issues** → `docs/agents/issue-tracker.md` (uses `gh` CLI).
+- **Applying triage labels** → canonical vocabulary in `.github/triage-labels.json`; mapping notes in `docs/agents/triage-labels.md`.
+- **Exploring the codebase or naming concepts in issues / ADRs / proposals** → read `CONTEXT.md` first, then the relevant `docs/adr/*.md` per `docs/agents/domain.md`.

@@ -31,9 +31,8 @@ Mechanical check: `scripts/validate_red_lines.py`. Layer 7 check: `scripts/valid
 
 ## Routing (do not confuse)
 
-- **Layer 7 loaded** — rules + auditor active for 社科摘要 / 科普段 / humanities intro cues
-- **Layer 7 injection** — hedging + `笔者认为` only in Discussion / Conclusion / Limitations / 政策含义
 - **Rebuttal mode** — edits rebuttals (politeness + point-by-point); not a no-edit fallback
+- **Layer 7** — see SKILL.md "Document-style routing" + `references/layers/layer-7-academic-injection.md`; **加载 ≠ 注入**
 
 ## ADRs
 

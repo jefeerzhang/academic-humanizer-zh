@@ -19,14 +19,7 @@ This file is loaded ON DEMAND. Do not edit SKILL.md or rules-zh.md contracts bec
 
 ## 7.0 何时启用
 
-参考 `SKILL.md` 的 "Document-style routing" 小节。仅当以下任一条件成立时启用本层：
-
-| 输入特征 | 启用 Layer 7 |
-|---|---|
-| 含 `\cite{}` / `\citep{}` / `\begin{equation}` / `p < 0.0x` / `n = xxx` / `.bib` 文件指针 | ❌ 不启用，走 Layer 1–6 |
-| 含 NIH Aims / NSF Project Summary / fellowship 结构标志 | ❌ 不启用，走 Layer 6 |
-| 纯中文学术摘要 / 科普段，无上述硬学术标志，但段落含「摘要」「本文提出」「研究表明」「研究方法」「政策含义」 | ✅ **启用** |
-| 用户口头说「摘要松一松」「科普段落自然化」「不要太死板」 | ✅ **强制启用**，无视自动判定 |
+路由决策由 `SKILL.md` 的 "Document-style routing" 单一权威（一张表覆盖硬学术标志、grant 标志、口语化学术段、用户口头触发）。**Layer 7 加载 ≠ 注入**：路由命中只解锁规则与审计器；注入（hedging / 第一人称）按 §7.2 密度上限与 §7.3 句式库的落点限制执行。
 
 **正交关系**：Layer 7 与 Layer 5（voice/venue matching）正交——Layer 5 是 venue 适配，Layer 7 是 venue 之内的"立人味"工具。
 
@@ -118,32 +111,6 @@ This file is loaded ON DEMAND. Do not edit SKILL.md or rules-zh.md contracts bec
 
 ---
 
-## 7.6 启用判据（决策树）
-
-与 `SKILL.md` "Document-style routing" **一致**——无「询问用户」分支：
-
-```
-[输入段落]
-    │
-    ├── 含硬学术标志（cite/equation/p-value/bib）──→ ❌ Layer 7 不启用
-    │                                                   仅跑 Layer 1–6 + rules-zh.md 病灶 A–F
-    │
-    ├── 含 grant 标志（NIH/NSF/fellowship）──→ ❌ Layer 7 不启用
-    │                                              仅跑 Layer 1–6 + Layer 6 grant mode
-    │
-    ├── 用户口头说"摘要松一松 / 科普段落自然化" ──→ ✅ 强制启用 Layer 7
-    │
-    ├── 自动检测到社科/人文/科普段（摘要/政策含义/研究方法等标记，无硬标志）──→ ✅ 自动启用 Layer 7
-    │       · Layer 7 **加载**（rules + 审计器激活）
-    │       · **注入**（hedging + 笔者认为）仅落 Discussion / Conclusion / Limitations / 政策含义
-    │       · 引言 / 摘要主体：仅 C7 清机器味，**不注入**
-    │
-    └── 其他（无学术标记、无 grant、无硬标志）──→ ❌ 默认不启用
-                                                          考虑重路由到 sibling skill `natural-chinese`
-```
-
----
-
 ## 7.7 完成判据（核对清单）
 
 修改完成后，按本清单过一遍：
@@ -170,15 +137,7 @@ This file is loaded ON DEMAND. Do not edit SKILL.md or rules-zh.md contracts bec
 
 ## 7.8 与 `natural-chinese` 的边界
 
-| 场景 | 用这个 skill |
-|---|---|
-| 中文学术摘要 / 科普段落（带"研究""方法""政策含义"标记） | **本 skill（academic-humanizer-zh）** + Layer 7 |
-| 中文学术论文主体（Methods / Results / 严格 grant） | **本 skill**，**不启用** Layer 7 |
-| 通用中文润色（公众号 / 公文 / 商业 / 新闻 / 文学） | **sibling skill [`natural-chinese`](https://github.com/jefeerzhang/natural-chinese)** |
-| 英文学术 / grant proposal | **本 skill**，默认走英文规则集（Layer 1–6） |
-| 中文 + 英文混排，且主导是英文 | **本 skill**，按 Language routing 走英文 |
-
-跨 skill 边界：自然中文的 5 条注入工具（第一人称、认知边界、主观感受、读者对话、节制不完美）在学术场景只有前两条被 Layer 7 采纳；后三条保持关闭，避免破坏学术 register。
+`natural-chinese` 是本 skill 的 sibling，承担通用中文润色（公众号 / 公文 / 商业 / 新闻 / 文学）。Layer 7 仅借用其「破+立双轨」中**学术场景合规的子集**（认知边界留白 + 第一人称限密度）；后三条人味工具（主观感受 / 读者对话 / 节制不完美）在学术场景保持关闭，避免破坏学术 register。完整路由决策见 SKILL.md "Document-style routing" 与 "Language routing"。
 
 ---
 

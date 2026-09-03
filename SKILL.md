@@ -76,7 +76,9 @@ casualizing, and (2) enforce the discipline a general humanizer misses:
    declaration**. Cover everything the original covered. When Layer 7 was active, run
    `scripts/validate_layer7_injection.py` on the before/after pair and report its exit
    code (0 pass / 1 warning / 2 red-line violation); CI wraps the same check via
-   `.github/workflows/audit.yml`.
+   `.github/workflows/audit.yml`. **Completion:** every numbered item 1–4 is present, and
+   the unchanged-claim declaration is explicit on each C0/C1/C2 category — not just a
+   blanket "no changes".
 
 ---
 
@@ -113,9 +115,6 @@ should not be re-routed to the Chinese ruleset):
   routing rule above holds: 套话开头/过渡/收尾, 价值判断词饱和, 抽象主语, 名词化动词,
   排比三件套, 假客观元评论, 句式冗余 — subject to the same red lines in C0–C2.
 
-Layers 1–6 are language-agnostic and apply to all text; C7 adds the Chinese-specific
-patterns on top.
-
 ---
 
 ## Document-style routing (academic-injection activation)
@@ -130,13 +129,7 @@ Beyond language, route by **document style** — the layer that should run.
 | User explicitly says "摘要松一松" / "科普段落自然化" / "不要太死板" | **Force-activate Layer 7**, regardless of auto-detection |
 | Non-academic Chinese (公众号 / 公文 / 商业 / 新闻 / 文学) | **Defer to sibling skill [`natural-chinese`](https://github.com/jefeerzhang/natural-chinese)** — this skill does not edit |
 
-Layer 7 is **additive, never substitutive**:
-
-- It does NOT replace Layer 1–6; C0–C2 red lines always run first (numbers, citations, named terms, equations, dates).
-- It does NOT loosen C4 (claim ↔ evidence) or C5 (voice/venue).
-- It activates **only** cognitive hedging + first-person limiting density, with explicit upper bounds and forbidden-section lists. See `references/layers/layer-7-academic-injection.md` for the full contract.
-
-**Executable check**: `scripts/validate_layer7_injection.py` audits the AFTER text and exits 0/1/2. Use it after any Layer 7-enabled edit.
+Layer 7 is **additive, never substitutive**: C0–C2 red lines run first, C4–C5 are not loosened, only cognitive hedging + first-person limiting activate. Density caps and forbidden-section rules live in `references/layers/layer-7-academic-injection.md`; the executable check is `scripts/validate_layer7_injection.py` (exit 0/1/2; CI runs it in `.github/workflows/audit.yml`).
 
 ---
 
