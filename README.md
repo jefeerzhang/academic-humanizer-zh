@@ -65,6 +65,62 @@ example, an NIH Specific Aims page, and a funded NSF CAREER summary.
 
 ---
 
+## 它跑起来长这样（5 步工作流速览）
+
+下面是一份真实的中文社科研究报告（约 4500 字，含 70 处作者机构+年份引用、30+ 个统计量）按
+本 skill 完整跑完留下的 5 张产物截图——每一张对应 `SKILL.md` 里 `Process` 的一步。
+**这 5 张图就是 README 顶部"5 秒价值陈述"承诺的实物：路由 → 病灶扫描 → 注入计划 →
+Diff → 红线声明。**
+
+> 这 5 张截图与 `Process` 的对应关系：路由 ↔ `Process` 准备阶段；病灶扫描 ↔ `Process` 第 2 步；
+> 注入计划 ↔ `Process` 第 3 步（Layer 7 激活分支）；Diff ↔ `Process` 第 4 步；红线声明 ↔
+> `Process` 第 4 步的 *Unchanged-claim declaration*。
+
+### Step 1 · 路由决策 — 选哪条规则、哪些层跑
+**对应**：`SKILL.md` → *Document-style routing* · `references/rules-zh.md` → C7 · `references/layers/layer-7-academic-injection.md`
+
+[![Step 1 路由决策](assets/workflow/01-routing.png)](assets/workflow/01-routing.png)
+
+> 路由决策先于编辑：连续中文段落 → C7 启用；硬学术 markers 缺席 + 有"政策含义/局限"段 →
+> Layer 7 加载但仅注入 Discussion 性质段落。这一步把"破+立双轨"中的"立"压到最小合规模块。
+
+### Step 2 · 病灶扫描 — 先列诊断，再动手修
+**对应**：`SKILL.md` → `Process` 第 2 步（Audit）· Layer 1+2+3+4+rules-zh.md 六类病灶
+
+[![Step 2 病灶扫描](assets/workflow/02-audit.png)](assets/workflow/02-audit.png)
+
+> 改之前先列"位置 / 病灶 / 处理"三列表：保留什么、改为什么——避免改着改着顺手把
+> "evidence-tied hedging" 也一起干掉。本步的纪律来自 Layer 3（保留白名单）。
+
+### Step 3 · Layer 7 注入计划 + Layer 4 数字核 — 落点和密度都先算清楚
+**对应**：`SKILL.md` → `Process` 第 2–3 步 · `references/layers/layer-7-academic-injection.md` ·
+`scripts/validate_layer7_injection.py`
+
+[![Step 3 Layer 7 注入计划 + Layer 4 数字核](assets/workflow/03-layer7-plan.png)](assets/workflow/03-layer7-plan.png)
+
+> Layer 7 不是"看着改"：先数好全文第一人称 ≤1 处（仅 Discussion），cognitive hedging 密度
+> 落在 1–3 / 千字，所有数字先列出来作为"绝对不动"清单——这一步就是"数字没动从口头承诺变成
+> CI 退出码"在动手之前的部分。
+
+### Step 4 · Diff（修改对照表）— 每一处改动都有规则号
+**对应**：`SKILL.md` → `Process` 第 4 步 · Layer 4 / Layer 7 / C3 / "锅巴 B" 等规则条目
+
+[![Step 4 Diff 修改对照表](assets/workflow/04-diff.png)](assets/workflow/04-diff.png)
+
+> 每条 Diff 都带"对应规则"列（Layer 4 / Layer 7 §7.3 §7.4 / C3 / 锅巴 B…），让作者按列回查
+> SKILL.md 哪一条触发，避免"为改而改"。这是 review-friendly 的展示，不是 AI 改稿的"一键润色"。
+
+### Step 5 · Unchanged-claim Declaration（C0–C2 红线声明）+ 完成判据核对
+**对应**：`SKILL.md` → `Process` 第 4 步 *Unchanged-claim declaration* · `scripts/validate_red_lines.py`（退出码 0/1/2/3）
+
+[![Step 5 红线声明 + 完成判据](assets/workflow/05-declaration.png)](assets/workflow/05-declaration.png)
+
+> 这是 README 顶部"5 秒价值陈述"的硬证据：数字、统计量、引用、日期、命名术语、章节结构
+> **逐条**列出"未改动"，完成判据核对 6/6 全过。C0–C2 不靠编辑承诺——靠可执行脚本兜底：
+> `python scripts/validate_red_lines.py before.md after.md` 退出码 0 = 红线全部保住。
+
+---
+
 ## What it does
 
 - **Sharpens clarity and voice:** trims generic AI phrasing ("paves the way", "extensive experiments",
@@ -157,7 +213,8 @@ It is a plain `SKILL.md` plus examples, so it also runs as a skill or system pro
 │   ├── validate_red_lines.py         # C0-C2 mechanical auditor (CI-friendly exit codes)
 │   ├── validate_layer7_injection.py  # v0.5.0: Layer 7 injection-density auditor
 │   └── README.md                     # how to use the auditors
-└── assets/                           # README banners
+└── assets/                           # README banners + 5-step workflow screenshots (see "它跑起来长这样")
+    └── workflow/                     # 01-routing · 02-audit · 03-layer7-plan · 04-diff · 05-declaration
 ```
 
 ## Make it yours
