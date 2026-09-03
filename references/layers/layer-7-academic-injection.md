@@ -104,7 +104,7 @@ This file is loaded ON DEMAND. Do not edit SKILL.md or rules-zh.md contracts bec
 |---|---|---|
 | 在不确定处强加"我认为" | 在 Results 段塞"笔者倾向于" | 学术规约：Results 段不 hedge 主结论 |
 | 用 emoji 替代语气词 | 在社科摘要用「🔥 / 💡」 | 完全禁止 |
-| 用"挺""蛮"插入严肃文体 | 摘要里出现"挺""蛮""相当" | 学术 register 倒退 |
+| 用"挺""蛮"插入严肃文体 | 摘要里出现封闭词表中的口语强化（挺好 / 挺多 / 挺不错 / 挺不好 / 蛮好 / 蛮不错 / 蛮不好） | 学术 register 倒退；任意「挺身而出」「蛮不讲理」不在此列 |
 | 模仿小红书体 | "绝绝子""家人们""YYDS" | 完全禁止 |
 | 段尾强加"未来依然可期" | 末段"未来值得期待""前景广阔" | 抒情收尾，违反 rules-zh.md §1-A |
 | 电报体 | 把所有长句切成 5–10 字短句 | 学术段落需要条件状语，强行切碎失信息密度 |
@@ -115,10 +115,10 @@ This file is loaded ON DEMAND. Do not edit SKILL.md or rules-zh.md contracts bec
 
 修改完成后，按本清单过一遍：
 
-- [ ] 全文第一人称 ≤1 处，且仅在 Discussion / Conclusion / Limitations
-- [ ] cognitive hedging 仅出现于 Discussion / Conclusion / Limitations，未污染 Results / Methods
+- [ ] 全文第一人称 ≤1 处，且仅在 Discussion / Conclusion / Limitations / 政策含义
+- [ ] cognitive hedging 仅出现于 Discussion / Conclusion / Limitations / 政策含义，未污染 Results / Methods / 摘要 / 引言
 - [ ] 全文未出现「我认为 / 我觉得 / 我感觉」等口语第一人称
-- [ ] 全文未出现 emoji、未出现小红书体、未出现"挺 / 蛮"
+- [ ] 全文未出现 emoji、未出现小红书体、未出现口语强化封闭词表（挺好 / 挺多 / 挺不错 / 挺不好 / 蛮好 / 蛮不错 / 蛮不好）
 - [ ] C0–C2 红线（数字、引用、命名术语）一字未动
 - [ ] 跑 `scripts/validate_red_lines.py` 退出码 0（C0–C2 兜底）
 - [ ] 跑 `scripts/validate_layer7_injection.py` 退出码 0（注入密度审计）
@@ -128,10 +128,10 @@ This file is loaded ON DEMAND. Do not edit SKILL.md or rules-zh.md contracts bec
 1. 第一人称计数（≤1）
 2. cognitive hedging 密度（≤3 处/千字，建议 1–3）
 3. 反人味陷阱黑名单命中（应为 0）
-4. cognitive hedging 落点（仅 Discussion/Conclusion/Limitations）
+4. cognitive hedging 落点（仅 Discussion/Conclusion/Limitations/政策含义）
 5. C0–C2 红线委托 `validate_red_lines.py` 跑（退出码 0）
 
-退出码：0 = pass；1 = 警告（hedge 密度超标但未污染 Results/Methods）；2 = 失败（第一人称滥用 / hedge 落 Results / 红线破）。
+退出码：0 = PASS；1 = WARN（hedge 密度超标但未污染禁用段）；2 = FAIL（第一人称滥用 / hedge 落禁用段 / 黑名单 / C0–C2 红线破）。
 
 ---
 

@@ -43,10 +43,10 @@ and **funding proposals** (NSF, NIH Specific Aims, fellowship / foundation propo
 see Layer 6). **Not** for blogs, marketing, or personal essays. Do **not** inject
 colloquial first-person voice (`我觉得`, humor, emoji personality) into a manuscript;
 preserve whitelisted scholarly `we` / `本研究`, and apply Layer 7's ≤1 academic hedge-person
-(`笔者认为`) only in Discussion / Conclusion / Limitations when Layer 7 injection is active.
-For technical writing, neutral and precise *is* the human voice. Proposals have a different
-register from papers — ambition language a paper would trim is appropriate there; apply
-Layer 6, not the paper layers' stricter trimming, to vision statements.
+(`笔者认为`) only in Discussion / Conclusion / Limitations / 政策含义 when Layer 7
+injection is active. For technical writing, neutral and precise *is* the human voice.
+Proposals have a different register from papers — ambition language a paper would trim is
+appropriate there; apply Layer 6, not the paper layers' stricter trimming, to vision statements.
 
 ## Core principle
 
@@ -68,14 +68,16 @@ casualizing, and (2) enforce the discipline a general humanizer misses:
 3. **Rewrite**: same structure and content, all claims and citations preserved, tells
    removed, over-claims matched to evidence, legitimate hedging kept. When Layer 7 is
    active, inject cognitive hedging / academic first-person **only** in Discussion /
-   Conclusion / Limitations / 政策含义 — **never** in the abstract, Methods, or Results.
-   Before rewriting, read `examples/before-after-zh-academic-injection.md` to calibrate
-   the Layer 7 edit strength (general edit strength: `examples/before-after-zh-academic.md`;
-   English prose: `examples/before-after.md`).
+   Conclusion / Limitations / 政策含义 — **never** in the abstract, Methods, Results, or
+   引言. Before rewriting, read `examples/before-after-zh-academic.md` to calibrate edit
+   strength and output format (English prose: `examples/before-after.md`). When Layer 7 is
+   loaded, also read `examples/before-after-zh-academic-injection.md` for injection
+   density and landing-zone calibration.
 4. **Report**: cleaned text plus a short change log + a **diff** + an **unchanged-claim
    declaration**. Cover everything the original covered. When Layer 7 was active, run
    `scripts/validate_layer7_injection.py` on the before/after pair and report its exit
-   code (0 pass / 1 warning / 2 red-line violation); CI wraps the same check via
+   code (0 = PASS / 1 = WARN / 2 = FAIL for first-person abuse, hedge in forbidden
+   section, blacklist hit, or delegated C0–C2 red-line break); CI wraps the same check via
    `.github/workflows/audit.yml`. **Completion:** every numbered item 1–4 is present, and
    the unchanged-claim declaration is explicit on each C0/C1/C2 category — not just a
    blanket "no changes".

@@ -277,7 +277,11 @@ Layer 2 (2.1–2.11) and Layer 6 (NSF / NIH) live in references/layers/ and load
 
 ## §9. Layer 7 学术注入层（v0.5.0 新增，可选）
 
-完整契约见 `references/layers/layer-7-academic-injection.md`（豁免密度表、反人味黑名单、完成判据、自动化审计）。本文件不再重复：路由、句式库、决策树、边界表均以该引用为单一权威来源。
+- **路由权威**：`SKILL.md` → "Document-style routing"（何时 loaded / 何时强制启用）。
+- **密度 / 句式 / 黑名单 / 完成判据**：`references/layers/layer-7-academic-injection.md`。
+- **加载 ≠ 注入**：路由命中只解锁规则与审计器；注入仅落 Discussion / Conclusion / Limitations / 政策含义。
+
+本文件（C7）只管病灶 A–F；不再复述 Layer 7 契约。
 
 ---
 

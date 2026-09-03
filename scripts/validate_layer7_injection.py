@@ -77,9 +77,10 @@ BLACKLIST_PATTERNS = [
     r"🔥|💡|👍|✨|🌟|⭐|💯|🎉|🤖",
     r"绝绝子|家人们|YYDS|绝美|绝绝",
     r"(?:^|[^笔本研])我(?:觉得|感觉|想|倾向)",
+    # Closed colloquial intensifier list (not arbitrary 挺/蛮).
     # no \b: CJK has no word boundary, so a leading \b misses 挺 after a CJK char.
-    # Match complete tokens only (avoid fragmenting 蛮不错 / false-flagging 蛮不讲理).
-    r"挺(?:好|多|不错)|蛮(?:好|不错)",
+    # Match complete tokens only (avoid fragmenting 蛮不错 / false-flagging 蛮不讲理 / 挺身而出).
+    r"挺(?:好|多|不错|不好)|蛮(?:好|不错|不好)",
 ]
 BLACKLIST_RE = re.compile("|".join(BLACKLIST_PATTERNS))
 
@@ -125,7 +126,7 @@ LAYER7_ACTIVATION_MARKERS = [
 
 FORBIDDEN_SECTIONS = {
     "方法", "方法论", "研究方法", "实验设计", "数据与",
-    "实证结果", "研究结果", "结果", "发现", "摘要", "preamble",
+    "实证结果", "研究结果", "结果", "发现", "摘要", "引言", "preamble",
 }
 
 
@@ -326,7 +327,7 @@ def check_hedging(
         if sec in FORBIDDEN_SECTIONS:
             findings.append(Finding(
                 severity="FAIL", rule="L7.2",
-                message=f"认知边界留白 '{match}' 落在禁用段落 §{sec}（仅 Discussion/Conclusion/Limitations 允许）。",
+                message=f"认知边界留白 '{match}' 落在禁用段落 §{sec}（仅 Discussion/Conclusion/Limitations/政策含义 允许）。",
                 location=f"line {line}, §{sec}", evidence=match,
             ))
 
