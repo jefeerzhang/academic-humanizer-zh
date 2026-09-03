@@ -107,23 +107,35 @@ class TestBlacklist(unittest.TestCase):
         self.assertEqual(len(self._fails("都挺好")), 1)
 
     def test_ting_common_forms(self):
-        for s in ["挺好", "挺多", "挺不错", "挺不错"]:
+        for s in ["挺好", "挺多", "挺不错", "挺不好"]:
             self.assertEqual(len(self._fails(s)), 1, msg=s)
 
     def test_man_common_forms_full_token(self):
         # 蛮不错 must match as the full token, not a fragment "蛮不".
-        for s in ["蛮好", "蛮不错", "这蛮不错"]:
+        for s in ["蛮好", "蛮不错", "这蛮不错", "蛮不好"]:
             fails = self._fails(s)
             self.assertEqual(len(fails), 1, msg=s)
-            self.assertIn(fails[0].evidence, ("蛮好", "蛮不错"), msg=fails[0].evidence)
+            self.assertTrue(
+                any(fails[0].evidence.startswith(p) for p in ("蛮好", "蛮不错", "蛮不好")),
+                msg=fails[0].evidence,
+            )
 
     def test_man_bi_jiang_li_not_false_positive(self):
         # 蛮不讲理 uses 蛮=willful (蛮横), not the casual intensifier => NOT a trap.
         self.assertEqual(self._fails("蛮不讲理"), [])
 
+    def test_ting_shen_er_chu_not_false_positive(self):
+        self.assertEqual(self._fails("挺身而出"), [])
+
     def test_non_colloquial_not_flagged(self):
-        for s in ["还不错", "很好", "相当好", "很好"]:
+        for s in ["还不错", "很好", "相当好"]:
             self.assertEqual(self._fails(s), [], msg=s)
+
+    def test_intro_hedge_fails(self):
+        after = "## 引言\n目前尚不清楚这段是否该注入。\n"
+        findings, _, _ = check_hedging(after, sectionize(after))
+        fails = [f for f in findings if f.severity == "FAIL"]
+        self.assertTrue(any("§引言" in f.message for f in fails))
 
 
 class TestCombinedIntegration(unittest.TestCase):
