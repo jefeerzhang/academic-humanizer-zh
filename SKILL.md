@@ -78,9 +78,13 @@ casualizing, and (2) enforce the discipline a general humanizer misses:
    `scripts/validate_layer7_injection.py` on the before/after pair and report its exit
    code (0 = PASS / 1 = WARN / 2 = FAIL for first-person abuse, hedge in forbidden
    section, blacklist hit, or delegated C0–C2 red-line break); CI wraps the same check via
-   `.github/workflows/audit.yml`. **Completion:** every numbered item 1–4 is present, and
-   the unchanged-claim declaration is explicit on each C0/C1/C2 category — not just a
-   blanket "no changes".
+   `.github/workflows/audit.yml`. Whenever an edit is finalized, also run
+   `scripts/audit_tells.py` on the result (`--combined` on the before/after file, or
+   `--after` on the cleaned text) and report its exit code and any residual Layer 1
+   pattern hits in the change log; if exit ≥ 1 (WARN / FAIL), revise the residual tells
+   before finalizing. **Completion:** every numbered item 1–4 is present, the
+   unchanged-claim declaration is explicit on each C0/C1/C2 category — not just a
+   blanket "no changes" — and the `audit_tells.py` exit code is reported.
 
 ---
 

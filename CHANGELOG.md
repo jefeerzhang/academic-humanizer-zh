@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - Elegant variation and em-dash rules calibrated (weak-tell-alone; em-dash rule kept as academic register, not detection)
 - Vague connection/association and knowledge-gap speculation documented as academic-nuanced patterns with Layer 3/4 caveats
+- Process step 4 (Report) now requires the `audit_tells.py` exit code in the report and a revise-until-PASS loop on residual Layer 1 tells
 
 ## [0.5.0] — 2026-09
 
