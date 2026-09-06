@@ -24,6 +24,7 @@ jobs:
           python scripts/test_validate_red_lines.py
           python scripts/test_combined_parser.py
           python scripts/test_validate_layer7_injection.py
+          python scripts/test_audit_tells.py
           python scripts/test_repo_consistency.py
 
   red-lines:
@@ -51,3 +52,19 @@ jobs:
         run: |
           set -e
           python scripts/validate_layer7_injection.py --combined --all-pairs examples/before-after-zh-academic-injection.md
+
+  tells:
+    name: Layer 1 residual tells (audit_tells.py)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Audit After spans for Layer 1 residual tells
+        run: |
+          set -e
+          python scripts/audit_tells.py --combined examples/before-after.md
+          python scripts/audit_tells.py --combined examples/before-after-zh-academic.md
+          python scripts/audit_tells.py --combined examples/before-after-zh-academic-injection.md
+          python scripts/audit_tells.py --combined examples/before-after-tri-research-report-zh.md

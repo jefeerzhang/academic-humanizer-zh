@@ -1,5 +1,42 @@
 # Scripts
 
+## audit_tells.py
+
+Mechanical counterpart of the skill's "what still sounds AI-generated" step.
+Scans After text for Layer 1 residual AI tells from the sourced catalog
+(`references/layers/layer-1-general-tells.md`) — the watch-lists there are the
+script's input.
+
+### Rules
+
+| Rule | Severity | What is flagged |
+| ---- | -------- | --------------- |
+| 1.10 placeholder / unfilled template | FAIL | `[Describe...]`, `[citation needed]`, `INSERT_*`, `202x-xx-xx` dates, `<URL>` |
+| 1.17 em / en dashes | FAIL | em dashes; en dashes outside numeric ranges (2–6%, 2020–2025 are fine). Chinese 破折号 `——` (incl. with bold markers around it) is standard punctuation and is NOT flagged |
+| 1.1–1.16 weak tells | WARN | per-pattern watch-list hits (AI vocabulary, -ing tails, vague attributions, filler, ...). A single hit is often legit — review. ≥3 patterns co-occurring adds a co-occurrence WARN (the catalog's "several patterns together" bar) |
+| `[N]`-style inline citations | never | sacred under C0; not placeholders |
+
+### Usage
+
+Combined markdown with ## Before / ## After (audits every After span):
+
+    python3 scripts/audit_tells.py --combined examples/before-after-zh-academic.md
+
+Plain file:
+
+    python3 scripts/audit_tells.py --after after.md
+
+### Exit codes (CI-friendly)
+
+- 0  No strict hits, no weak-tell hits.
+- 1  Weak tells present — human review recommended.
+- 2  Strict tell present (placeholder, em dash, or non-range en dash) — must fix.
+- 3  Unexpected crash — never conflated with WARN.
+
+### Regression tests
+
+    python scripts/test_audit_tells.py
+
 ## validate_red_lines.py
 
 Mechanical auditor for the C0-C2 red lines in SKILL.md. Confirms that an
