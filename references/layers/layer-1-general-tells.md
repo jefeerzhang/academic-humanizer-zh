@@ -172,6 +172,7 @@ From Wikipedia "Signs of AI writing" (Ineffective indicators) + Layer 3:
 - **Deliberate repetition used for rhythm** ("She came. She saw. She conquered.") — keep it.
 - **Unsourced claims** — most prose is unsourced; lack of citations is not a tell.
 - **Secondhand text** — never rewrite watched phrases inside quotations, titles, proper names, or examples where the phrase is being *discussed* rather than *used*.
+- **Chinese register conventions** — 总而言之 / 需要注意的是 / 核心解释变量 / 结论·建议·贡献骨架 are whitelisted for Chinese social-science writing (`references/rules-zh.md` §10); do not flag them via this English catalog.
 - **Academic keeps (Layer 3):** evidence-tied hedging, passive voice, "we" / "本研究", semicolons, long attributives.
 - **When unsure:** several patterns in one passage are stronger evidence than one pattern anywhere.
 
