@@ -10,7 +10,7 @@ A **skill + auditors** package for editing AI-assisted **academic** prose (paper
 
 | Term | Meaning |
 |------|---------|
-| **Layer 1** | General AI-tell catalog (inline in `SKILL.md`) |
+| **Layer 1** | General AI-tell catalog (inline in `SKILL.md`; sourced working catalog → `references/layers/layer-1-general-tells.md`, sources: Wikipedia "Signs of AI writing" + blader/humanizer) |
 | **Layer 2** | Academic-specific tells → `references/layers/layer-2-academic-tells.md` |
 | **Layer 3** | Preserve scholarly constructs (hedging, passive, `we`) |
 | **Layer 4** | Claim↔evidence discipline — surface existing numbers, never invent |

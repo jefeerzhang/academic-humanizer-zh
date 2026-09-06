@@ -3,7 +3,7 @@
 > *「AI 起草的论文你敢直接投稿吗？——每个数字、引用、术语必须一字不动。」*
 
 [![license](https://img.shields.io/badge/license-MIT-2f8f57?style=flat-square)](LICENSE)
-&nbsp;[![version](https://img.shields.io/badge/version-0.5.0-2f8f57?style=flat-square)](CHANGELOG.md)
+&nbsp;[![version](https://img.shields.io/badge/version-0.6.0-2f8f57?style=flat-square)](CHANGELOG.md)
 &nbsp;[![skill](https://img.shields.io/badge/skill-papers_and_grant_proposals-1c1a15?style=flat-square)](SKILL.md)
 &nbsp;![built by](https://img.shields.io/badge/built_by-NSF,_CAREER,_NIH_R01-555?style=flat-square)
 &nbsp;[![skills.sh](https://img.shields.io/badge/skills.sh-jefeerzhang%2Facademic--humanizer--zh-2f8f57?style=flat-square)](https://skills.sh/jefeerzhang/academic-humanizer-zh)
@@ -168,8 +168,8 @@ This fork adds Chinese academic writing support on top of the upstream `AIScient
   hedging in Methods/Results), anti-human-trap blacklist (no emoji, no 小红书体, no 口语第一人称),
   and delegates C0–C2 to `validate_red_lines.py`. Exit codes 0/1/2 for CI integration.
 
-The English rules and contracts (C0–C7) live in `SKILL.md` (~280 lines: core layers + routing).
-Heavy catalogs (Layer 2, Layer 6, Layer 7) live under `references/layers/` and load on demand.
+The English rules and contracts (C0–C7) live in `SKILL.md` (~300 lines: core layers + routing).
+Heavy catalogs (Layer 1, Layer 2, Layer 6, Layer 7) live under `references/layers/` and load on demand.
 
 ---
 
@@ -197,10 +197,11 @@ It is a plain `SKILL.md` plus examples, so it also runs as a skill or system pro
 ```
 .
 ├── CONTEXT.md                        # Domain glossary (layers, C0–C2, routing terms)
-├── SKILL.md                          # Core contract + Layers 1, 3–5 (~280 lines) + Document-style routing
+├── SKILL.md                          # Core contract + Layers 1, 3–5 (~300 lines) + Document-style routing
 ├── references/
 │   ├── rules-zh.md                   # C7 Chinese local rules (load on routing) — §9 Layer 7 exemption table
 │   └── layers/
+│       ├── layer-1-general-tells.md  # Sourced Layer 1 catalog (Wikipedia Signs of AI writing + blader/humanizer), 1.1–1.18
 │       ├── layer-2-academic-tells.md # 2.1–2.11 detailed catalog
 │       ├── layer-6-proposals.md      # NSF / NIH structure + claim↔feasibility
 │       └── layer-7-academic-injection.md  # v0.5.0: academic-filtered 破+立双轨 (cognitive hedging + 第一人称限密度)
@@ -278,6 +279,10 @@ Layer 6 distills the *stable* structure of NSF and NIH proposals. For current, b
 - **[blader/humanizer](https://github.com/blader/humanizer)** (MIT). *Focus:* removing general
   AI-writing patterns for blog, casual, and encyclopedic text. This skill reuses its general AI-tell
   catalog (Layer 1) and extends it for academic prose.
+- **[Wikipedia: Signs of AI writing](https://en.wikipedia.org/wiki/Wikipedia:Signs_of_AI_writing)**
+  (CC BY-SA, maintained by WikiProject AI Cleanup). *Focus:* the evidence-backed pattern list behind
+  the general AI-tell catalog — era-aware vocabulary, false-positive guard, and per-pattern
+  watch-lists in `references/layers/layer-1-general-tells.md`.
 - **[koaeraser/ARMS](https://github.com/koaeraser/ARMS)**. *Focus:* an autonomous pipeline for
   statistics/methodology research papers (idea → validated, revised manuscript). A complementary,
   broader-scope project that informed the claim-evidence and numerical-precision emphasis here.

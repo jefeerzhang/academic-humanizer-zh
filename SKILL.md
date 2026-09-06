@@ -1,6 +1,6 @@
 ---
 name: academic-humanizer-zh
-version: 0.5.0
+version: 0.6.0
 description: |
   Edit AI-assisted academic prose (papers, theses, rebuttals, reviews) and grant
   proposals (NSF Project Summary/Description, NIH Specific Aims, fellowship/foundation
@@ -142,12 +142,22 @@ inflated significance ("marking a pivotal moment"); superficial "-ing" tails tha
 depth ("..., highlighting..."); promotional / figurative language ("rich", "vibrant",
 "groundbreaking"); vague attributions ("experts argue" with no cite); AI vocabulary
 (*delve, underscore, intricate, tapestry, testament, landscape (abstract), pivotal,
-showcase, foster, leverage (filler), realm, seamless*); copula avoidance ("serves as"
+showcase, foster, leverage (filler), realm, seamless, bolster, garner, meticulous,
+align with, gate/gated (figurative), vibrant, crucial, emphasize/emphasizing,
+highlight (verb)*); copula avoidance ("serves as"
 → "is"); negative parallelisms ("not just X, but Y"); rule-of-three padding; elegant
-variation (cycling synonyms for one referent); filler ("it is worth noting that", "in
-order to"); **overlong, clause-stacked sentences (split them; see 2.11)**;
+variation (flag only when several synonyms cycle for one referent in a paragraph — a single
+switch is not a tell); filler ("it is worth noting that", "in order to" — density, not
+single use); placeholder or unfilled template text ("[Describe...]", "INSERT_...",
+"202x-xx-xx", "[citation needed]" left in a draft); formulaic challenges-and-outlook
+("Despite these promising results, several challenges remain…" as a stock closing); fake
+deeper truth ("at its core", "what really matters"); defensive "not X" moves that answer an
+objection no one raised ("This is not to say…", "It should be noted that this does not
+imply…"); rejected fake alternatives ("A tempting approach would be…, but…");
+**overlong, clause-stacked sentences (split them; see 2.11)**;
 and **em-dashes (remove entirely; recast with commas, colons, parentheses, or
-separate sentences)**.
+separate sentences — an academic-register rule, not a detection claim: one dash alone is
+not evidence)**.
 
 > Full Layer 2 (academic-specific tells, 2.1–2.11) lives in
 > `references/layers/layer-2-academic-tells.md` and is loaded on demand.
@@ -157,6 +167,14 @@ delve into intricate dependencies, showcasing a seamless integration that unders
 pivotal role.*
 **After:** *The method also captures higher-order dependencies, which the baselines miss
 (Table 2).*
+
+> Full Layer 1 working catalog — per-pattern watch-lists, before/after pairs, false-positive
+> guard, and academic adaptations — lives in
+> `references/layers/layer-1-general-tells.md` and is loaded on demand. Sources:
+> Wikipedia ["Signs of AI writing"](https://en.wikipedia.org/wiki/Wikipedia:Signs_of_AI_writing)
+> (WikiProject AI Cleanup) and [blader/humanizer](https://github.com/blader/humanizer) (MIT).
+> When a "After" example here or in the catalog shows a number, it must already exist in the
+> author's tables or Before text — never invent magnitudes (C0).
 
 ---
 
