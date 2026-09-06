@@ -15,6 +15,7 @@
 **5 秒价值陈述**
 
 - **14 类**中文学术 AI 痕迹 · **6 段** grant proposal 模式 · **7 条** C0–C2 红线契约
+- **56 条**「别乱改」白名单：从 3 篇已发表好论文提炼的中文学术惯例表达与骨架——知道哪些**不是** AI 味
 - `scripts/validate_red_lines.py` 把「数字没动」从口头承诺变成 CI 退出码 `0/1/2/3`
 - 每个改动都附 before/after 对照 + diff + unchanged-claim declaration
 
@@ -148,7 +149,8 @@ This fork adds Chinese academic writing support on top of the upstream `AIScient
   过渡/收尾、价值判断词饱和、抽象主语、名词化动词、排比三件套、假中立元评论) and explicitly
   protects academic conventions that must not be changed (passive voice, "本研究/本文", long
   attributives, statistical notation, references, project numbers). v0.5.0 adds §9 — the academic
-  injection (Layer 7) exemption table.
+  injection (Layer 7) exemption table. v0.6.0 adds §10 — the do-not-flag whitelist (别乱改清单, 56
+  entries extracted from 3 published Chinese social-science papers).
 - **`references/layers/layer-7-academic-injection.md`** — v0.5.0 bridge from sibling skill
   [`natural-chinese`](https://github.com/jefeerzhang/natural-chinese). Loads only when the input
   matches "学术 + 口语化段落 / 科普段 / 社科摘要 / humanistic introduction" branch (see
@@ -170,6 +172,26 @@ This fork adds Chinese academic writing support on top of the upstream `AIScient
 
 The English rules and contracts (C0–C7) live in `SKILL.md` (~300 lines: core layers + routing).
 Heavy catalogs (Layer 1, Layer 2, Layer 6, Layer 7) live under `references/layers/` and load on demand.
+
+---
+
+## 别乱改清单：AI 白名单（从好论文里提取的）
+
+大多数 humanizer 只教你**删什么**——黑名单越堆越长。这个 skill 还知道**留什么**。
+
+我们从 **3 篇已发表的中文社科 / 经济学论文**里逐句提炼了 **56 条领域惯例表达与骨架**，做成 C7 层的「别乱改」白名单（[`references/rules-zh.md`](references/rules-zh.md) §10）：
+
+- **7 条高频表达**——总而言之、需要注意的是、考虑到数据的可得性、核心解释变量……这些是领域正常写法，不是套话
+- **20 条段落骨架**——结论 / 建议 / 承接与选题 / 边际贡献的标准组织方式
+- **29 条文献综述与概念界定骨架**——综述归类、分歧呈现、概念设问、让步反例、收束定义
+
+**为什么这很重要**：AI 检测目录（黑名单）到处都是——[blader/humanizer](https://github.com/blader/humanizer) 有 35 条，维基百科有一整页。但**领域白名单几乎没人做**。没有白名单的 humanizer 会把好论文里的惯例表达当套话清掉：把"总而言之"砍了、把"核心解释变量"当价值判断、把标准的结论骨架拆散成"更像人话"的平铺——改完丢了学术 register，反而更像外行写的。有白名单的编辑器知道**哪些是正常写法**，只清真正的 AI 味，不动领域惯例。
+
+> 例：白名单收录"本文基于____的面板数据，使用____模型实证检验了____对____的影响"——这是中文经济论文结论段的标准骨架。原稿这样组织时，**保留结构**，不要重排成平铺。
+
+白名单还带着 **7 条人味信号**（让步开局、主动暴露文献冲突、"当然……并不完全由……衡量"的限定式反驳、引号标记借来概念……）——这些结构出现时不仅不该动，反而是"这段是人写的"的正面证据。
+
+白名单持续生长：作者不断从新读到的好论文里提炼骨架并入 §10（当前 56 条，逐条可追溯来源）。
 
 ---
 
