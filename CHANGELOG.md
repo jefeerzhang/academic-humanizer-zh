@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `references/layers/layer-1-general-tells.md`: sourced per-pattern working catalog (watch-lists + before/after, 1.1–1.18) with false-positive guard and academic adaptations
 - `references/rules-zh.md` §10: 别乱改清单（作者领域校准白名单：高频表达 + 结论/建议/承接/边际贡献骨架，优先于病灶 A–F 与 §7）；病灶 A「总而言之 / 鉴于此」与 §7「值得注意的是」的冲突已对齐到白名单
 - `references/rules-zh.md` §10-C: 第 3 批文献综述与概念界定骨架（29 条，含匹配注意 + 7 条人味信号标注）
+- `rules-zh.md` §10 与 README：白名单提炼来源署名（余泳泽等 2025《中国工业经济》· 张大永等 2023《财贸研究》，C 组出自第 1 篇的综述段）
 - `scripts/audit_tells.py`: Layer 1 residual AI-tell auditor (strict: placeholder / em dash; weak: per-pattern watch-lists with co-occurrence bar; CI job audits all examples) + `scripts/test_audit_tells.py`
 - New Layer 1 patterns: placeholder / unfilled template text, formulaic challenges-and-outlook, fake deeper truth, defensive "not X" moves, rejected fake alternatives; era-aware AI-vocabulary watch-list (2023/2024/2025 model eras, Grok quirks)
 
