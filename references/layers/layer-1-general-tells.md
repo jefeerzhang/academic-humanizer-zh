@@ -8,38 +8,50 @@
 ## Sources
 
 - [Wikipedia: Signs of AI writing](https://en.wikipedia.org/wiki/Wikipedia:Signs_of_AI_writing), maintained by WikiProject AI Cleanup (CC BY-SA). The general patterns below track that page, which updates as model behavior changes (era-dependent vocabulary, declining em-dash rates, etc.).
-- [blader/humanizer](https://github.com/blader/humanizer) (MIT) — the same lineage, adapted for academic prose.
-- Pattern tags: **[W]** wiki-derived · **[B]** blader-derived · **[WB]** both · **[A]** academic adaptation.
+- [blader/humanizer](https://github.com/blader/humanizer) v3.1 (MIT) — same lineage, adapted for academic prose; strength ordering and patterns 1.19–1.20 follow its §2 / §24.
 
-## 1.1 Inflated significance, legacy, broader trends [WB]
+## Strength (edit discipline)
+
+Aligned with blader/humanizer v3.x: a tell counts in proportion to how rarely a careful writer would make it on purpose. Audit **paragraph shape** as well as sentences (a contrast split across two sentences, three parallel examples, or the same closer after every section is one tell at larger scale).
+
+| Strength | Meaning | Patterns here |
+| -------- | ------- | ------------- |
+| **Strong** | One clear sighting justifies an edit | 1.7, 1.10, 1.13, 1.14, 1.15, 1.19, 1.20 |
+| **Weak alone** | Act only when several tells share a passage, or density is high | 1.1–1.6, 1.8, 1.9, 1.11, 1.12, 1.16–1.18 |
+
+Pattern tags: **[W]** wiki-derived · **[B]** blader-derived · **[WB]** both · **[A]** academic adaptation. Strength tags below: **[strong]** / **[weak alone]**.
+
+---
+
+## 1.1 Inflated significance, legacy, broader trends [WB] [weak alone]
 
 **Watch:** stands/serves as, is a testament/reminder, a crucial/pivotal/vital/key role or moment, underscores/highlights its importance, reflects broader, symbolizing, setting the stage for, marking/shaping, key turning point, evolving landscape, focal point, indelibly/deeply rooted.
 
 **Before:** *This work marks a pivotal moment, paving the way for a new paradigm.*
 **After:** *This work addresses one failure mode of prior methods: error accumulation under long-horizon rollout (Section 4).*
 
-## 1.2 Superficial "-ing" tails [WB]
+## 1.2 Superficial "-ing" tails [WB] [weak alone]
 
 **Watch:** highlighting/underscoring/emphasizing…, ensuring…, reflecting/symbolizing…, contributing to…, cultivating/fostering…, encompassing…, enhancing…, valuable insights, align/resonate with.
 
 **Before:** *The model captures long-range dependencies, showcasing a seamless integration that underscores its value.*
 **After:** *The model captures long-range dependencies, which the baselines miss (Table 2).*
 
-## 1.3 Promotional / sales language [WB]
+## 1.3 Promotional / sales language [WB] [weak alone]
 
 **Watch:** boasts, vibrant, rich (figurative), profound, enhancing, showcasing, exemplifies, commitment to, groundbreaking, renowned, featuring, diverse array, in the heart of, nestled.
 
 **Before:** *Our approach boasts a groundbreaking framework grounded in profound theoretical insights.*
 **After:** *Our approach combines three ideas: a metadata-aware encoder, a soft-supervision loss, and cross-domain transfer (Section 3).*
 
-## 1.4 Vague attributions [WB]
+## 1.4 Vague attributions [WB] [weak alone]
 
 **Watch:** industry reports, observers have cited, experts argue, some critics argue, several sources (when only one or two are cited).
 
 **Before:** *Experts argue that the method is more robust.*
 **After:** *Two recent studies report higher robustness under distribution shift [7, 12].*
 
-## 1.5 AI vocabulary (era-aware) [W]
+## 1.5 AI vocabulary (era-aware) [W] [weak alone]
 
 **Watch (2023–2024 era):** Additionally (sentence-initial), boasts, bolstered, crucial, delve, emphasizing, enduring, garner, intricate/intricacies, interplay, key (adjective), landscape (abstract), meticulous, pivotal, underscore, tapestry, testament, valuable, vibrant.
 
@@ -51,28 +63,28 @@
 
 **Rule:** these words co-occur; one instance is weak, several in one passage is the tell. Check the After text against these lists before finishing (this is the mechanical audit target).
 
-## 1.6 Copula avoidance [WB]
+## 1.6 Copula avoidance [WB] [weak alone]
 
 **Watch:** serves as/stands as/marks/functions as/operates as/represents [a], boasts/features/maintains/offers [a], refers to (for the thing itself).
 
 **Before:** *This module serves as the core encoder and features a gating mechanism.*
 **After:** *This module is the core encoder and has a gating mechanism.*
 
-## 1.7 Negative parallelisms [WB]
+## 1.7 Negative parallelisms [WB] [strong]
 
 **Watch:** not just X but (also) Y, not X but Y, X rather than Y, no X, no Y, just Z.
 
 **Before:** *This isn't merely an optimization trick; it's a paradigm shift.*
 **After:** *The update rule is simple, and that is what makes the method stable.*
 
-## 1.8 Rule of three [WB]
+## 1.8 Rule of three [WB] [weak alone]
 
-**Watch:** three-item lists used to sound complete (adjective, adjective, adjective; short phrase ×3).
+**Watch:** three-item lists used to sound complete (adjective, adjective, adjective; short phrase ×3). Also check **paragraph scale**: three parallel examples plus a lesson.
 
 **Before:** *The framework is novel, elegant, and transformative.*
 **After:** *The framework is new relative to prior work (Section 2).*
 
-## 1.9 Vague connection / association [W, academic-nuanced]
+## 1.9 Vague connection / association [W, academic-nuanced] [weak alone]
 
 **Watch:** in connection with, connected with, associated with (when it replaces a relationship the author could name).
 
@@ -81,7 +93,7 @@
 
 **Academic caveat:** "X is associated with Y" is *correct calibrated language* in empirical work (as opposed to "causes"). Flag only the padding use — vague "connection" where the author could name the relationship. Do not "fix" correlational phrasing in Results.
 
-## 1.10 Placeholder / unfilled template text [W]
+## 1.10 Placeholder / unfilled template text [W] [strong]
 
 **Watch:** [Describe…], [citation needed] left in a draft, INSERT_…, PASTE_…, 202x-xx-xx dates, TODO, <URL>.
 
@@ -90,7 +102,7 @@
 
 Report any placeholder the author must fill in the change log; never invent the missing value yourself (C0).
 
-## 1.11 Formulaic challenges-and-outlook [W, academic-nuanced]
+## 1.11 Formulaic challenges-and-outlook [W, academic-nuanced] [weak alone]
 
 **Watch:** Despite these promising results / Despite these challenges, several challenges remain, future work will, Challenges and Future Directions (as a stock closing).
 
@@ -99,7 +111,7 @@ Report any placeholder the author must fill in the change log; never invent the 
 
 **Academic caveat:** limitations / discussion sections are required; the tell is the content-free restatement formula, not the mention of limitations.
 
-## 1.12 Knowledge-gap disclaimer + speculation [W→A]
+## 1.12 Knowledge-gap disclaimer + speculation [W→A] [weak alone]
 
 **Watch:** not extensively documented in the literature, little is known about, not widely available/documented (uncited) + likely/possibly/may reflect (speculative gap-fill).
 
@@ -108,14 +120,14 @@ Report any placeholder the author must fill in the change log; never invent the 
 
 **Academic caveat:** "little is known" is legitimate when true and ideally cited; the tell is the uncited disclaimer followed by an invented "likely" explanation. Ties to Layer 4: soften or cite — never fabricate the gap-fill.
 
-## 1.13 Fake deeper truth [B]
+## 1.13 Fake deeper truth [B] [strong]
 
 **Watch:** at its core, what really matters, the real question is, fundamentally, in reality, the heart of the matter.
 
 **Before:** *At its core, what really matters is whether the model can generalize.*
 **After:** *The open question is whether the model generalizes beyond its training distribution.*
 
-## 1.14 Defensive "not X" moves (answering unraised objections) [B]
+## 1.14 Defensive "not X" moves (answering unraised objections) [B] [strong]
 
 **Watch:** This is not to say…, To be clear, It should be noted that this does not imply…, Don't get me wrong, I'm not arguing that…, Some might say… but.
 
@@ -124,7 +136,7 @@ Report any placeholder the author must fill in the change log; never invent the 
 
 Keep the sentence only if the text already raised the objection, or the claim itself is real (Layer 4).
 
-## 1.15 Rejected fake alternatives [B]
+## 1.15 Rejected fake alternatives [B] [strong]
 
 **Watch:** a tempting approach would be, one might be tempted to, an obvious approach would be, it would be easy to just, you might think… but.
 
@@ -133,7 +145,7 @@ Keep the sentence only if the text already raised the objection, or the claim it
 
 Remove the fake option; keep the real constraint.
 
-## 1.16 Filler and qualifier stacking [WB]
+## 1.16 Filler and qualifier stacking [WB] [weak alone]
 
 **Watch (filler):** in order to, due to the fact that, at this point in time, it is worth noting that, it is important to note that, the fact that (redundant). **Density, not single use:** one "in order to" is ordinary human prose — flag when filler piles up.
 
@@ -144,14 +156,14 @@ Remove the fake option; keep the real constraint.
 
 **Academic caveat:** calibrated hedging (suggests, may indicate, is consistent with) is Layer 3-protected; cut only the stacking, never the evidence-tied hedge.
 
-## 1.17 Em dashes [WB]
+## 1.17 Em dashes [WB] [weak alone]
 
 **Rule:** the final rewrite must not contain em dashes (—) or en dashes (–); recast with commas, colons, parentheses, or separate sentences. This is an academic-register rule, not a detection claim: one dash alone is not evidence of AI (human editors use them; ChatGPT's rate has dropped, Claude's has not).
 
 **Before:** *The method — though simple — works well.*
 **After:** *The method is simple but works well.*
 
-## 1.18 Elegant variation [WB — weak tell]
+## 1.18 Elegant variation [WB] [weak alone]
 
 **Watch:** cycling several synonyms for one referent in the same paragraph (the encoder / the feature extractor / the representation module).
 
@@ -159,6 +171,36 @@ Remove the fake option; keep the real constraint.
 
 **Before:** *The encoder improves accuracy. The feature extractor adds stability. The representation module runs fast.*
 **After:** *The encoder improves accuracy, adds stability, and runs fast.*
+
+## 1.19 One-line closers and example restatement [B] [strong]
+
+**Watch:** a one-sentence paragraph that only restates the paragraph before it; "That is the real win."; "That distinction matters."; "Let that sink in."; the same closer after several sections; a sentence after an example, scene, or number that *names what it showed* without adding a claim ("This shows the importance of…", "The message was clear:", "It was a lesson in…"); staged run-ups before a routine claim ("Let's dive in", "Here's the thing", "Here's what you need to know").
+
+**Before:** *Accuracy rises by 4 points on ImageNet (Table 2). This shows the importance of metadata-aware encoding.*
+**After:** *Accuracy rises by 4 points on ImageNet (Table 2).*
+
+**Before (staged run-up):** *Here's the thing. The encoder fails when feature types are dropped.*
+**After:** *The encoder fails when feature types are dropped.*
+
+**Academic caveat:** Keep evidence pointers that name a result already in the text ("Table 2 shows…", "As Figure 3 indicates…"). Cut only the closer that *explains the example the reader just saw* or the run-up that delays the claim. Do not strip a limitations sentence that adds a new constraint.
+
+## 1.20 Heading restated in the first sentence [B] [strong]
+
+**Watch:** a heading followed by a one-line paragraph that only renames the heading before real content begins.
+
+**Before:**
+> ## Ablation
+>
+> We conduct an ablation study.
+>
+> Removing the type embedding drops AUROC by 3 points (Table 4).
+
+**After:**
+> ## Ablation
+>
+> Removing the type embedding drops AUROC by 3 points (Table 4).
+
+**Academic caveat:** A first sentence that *starts* the content under the heading is fine ("We ablate three components."). Flag only the pure restatement that says the section exists. In Chinese, the same tell: 「## 稳健性检验」后紧跟「本文进行稳健性检验。」→ 删复述句，直接写检验内容。
 
 ## False-positive guard (do not over-correct)
 

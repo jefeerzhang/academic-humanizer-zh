@@ -17,8 +17,9 @@ catalog's false-positive guard): 1.1 inflated significance, 1.2 -ing tails,
 1.3 promotional language, 1.4 vague attributions, 1.5 AI vocabulary,
 1.6 copula avoidance, 1.7 negative parallelisms, 1.9 vague connection,
 1.11 formulaic challenges-and-outlook, 1.12 knowledge-gap speculation,
-1.13 fake deeper truth, 1.14 defensive "not X" moves, 1.15 rejected fake
-alternatives, 1.16 filler.
+  1.13 fake deeper truth, 1.14 defensive "not X" moves, 1.15 rejected fake
+  alternatives, 1.16 filler, 1.19 one-line closers / example restatement.
+  (1.20 heading restatement is structural and not mechanically scanned.)
 
 Usage:
     # One combined markdown with "## Before" / "## After" sections
@@ -141,6 +142,12 @@ PATTERNS: tuple[TellPattern, ...] = (
         "could potentially possibly",
     )),
     TellPattern("1.17", "em / en dashes", True, ()),
+    TellPattern("1.19", "one-line closers / example restatement", False, (
+        "that is the real win", "that distinction matters", "let that sink in",
+        "this shows the importance", "the message was clear",
+        "here's the thing", "here's what you need to know", "let's dive in",
+        "let's explore", "without further ado",
+    )),
 )
 
 # 1.10 placeholders: bracket drafting-notes, INSERT_/PASTE_ tokens, <URL>,

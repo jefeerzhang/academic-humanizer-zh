@@ -187,7 +187,7 @@ Heavy catalogs (Layer 1, Layer 2, Layer 6, Layer 7) live under `references/layer
 </div>
 
 > [!IMPORTANT]
-> 黑名单工具（[blader/humanizer](https://github.com/blader/humanizer) 有 35 条、维基百科有一整页）会把好论文里的惯例表达当套话清掉：把「总而言之」砍了、把「核心解释变量」当价值判断、把标准结论骨架拆散成"更像人话"的平铺——改完丢了学术 register，反而更像外行写的。本 skill 的**领域白名单**知道哪些是正常写法：只清真正的 AI 味，不动领域惯例。
+> 黑名单工具（[blader/humanizer](https://github.com/blader/humanizer) 有 26 条、维基百科有一整页）会把好论文里的惯例表达当套话清掉：把「总而言之」砍了、把「核心解释变量」当价值判断、把标准结论骨架拆散成"更像人话"的平铺——改完丢了学术 register，反而更像外行写的。本 skill 的**领域白名单**知道哪些是正常写法：只清真正的 AI 味，不动领域惯例。
 
 | 白名单 | 条数 | 内容 | 例子 |
 |---|---|---|---|
@@ -245,7 +245,7 @@ It is a plain `SKILL.md` plus examples, so it also runs as a skill or system pro
 ├── references/
 │   ├── rules-zh.md                   # C7 Chinese local rules (load on routing) — §9 Layer 7 exemption table
 │   └── layers/
-│       ├── layer-1-general-tells.md  # Sourced Layer 1 catalog (Wikipedia Signs of AI writing + blader/humanizer), 1.1–1.18
+│       ├── layer-1-general-tells.md  # Sourced Layer 1 catalog (Wikipedia Signs of AI writing + blader/humanizer), 1.1–1.20
 │       ├── layer-2-academic-tells.md # 2.1–2.11 detailed catalog
 │       ├── layer-6-proposals.md      # NSF / NIH structure + claim↔feasibility
 │       └── layer-7-academic-injection.md  # v0.5.0: academic-filtered 破+立双轨 (cognitive hedging + 第一人称限密度)
@@ -306,7 +306,8 @@ Full routing logic and edge cases in [`SKILL.md`](SKILL.md) → "Document-style 
 
 If the input is a `.bib` / `.bbl`, a `.tex` mostly equations, or non-academic text, the skill
 **does not edit** and reports why. **Rebuttal / response-to-reviewers letters** use **rebuttal mode**
-(politeness + point-by-point structure) — they are edited, not treated as a no-edit fallback.
+(politeness + point-by-point; lead with the decision, then only the evidence that would change agreement)
+— they are edited, not treated as a no-edit fallback.
 Cover letters keep professional register; do not strip "we respectfully" politeness as AI fluff.
 
 ## References

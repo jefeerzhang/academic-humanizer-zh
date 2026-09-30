@@ -13,7 +13,7 @@ script's input.
 | ---- | -------- | --------------- |
 | 1.10 placeholder / unfilled template | FAIL | `[Describe...]`, `[citation needed]`, `INSERT_*`, `202x-xx-xx` dates, `<URL>` |
 | 1.17 em / en dashes | FAIL | em dashes; en dashes outside numeric ranges (2–6%, 2020–2025 are fine). Chinese 破折号 `——` (incl. with bold markers around it) is standard punctuation and is NOT flagged |
-| 1.1–1.16 weak tells | WARN | per-pattern watch-list hits (AI vocabulary, -ing tails, vague attributions, filler, ...). A single hit is often legit — review. ≥3 patterns co-occurring adds a co-occurrence WARN (the catalog's "several patterns together" bar) |
+| 1.1–1.16, 1.19 weak tells | WARN | per-pattern watch-list hits (AI vocabulary, -ing tails, vague attributions, filler, one-line closers, ...). A single hit is often legit — review. ≥3 patterns co-occurring adds a co-occurrence WARN (the catalog's "several patterns together" bar). 1.20 heading restatement is not scanned (structural) |
 | `[N]`-style inline citations | never | sacred under C0; not placeholders |
 
 ### Usage

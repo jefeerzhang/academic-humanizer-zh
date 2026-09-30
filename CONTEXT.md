@@ -10,7 +10,7 @@ A **skill + auditors** package for editing AI-assisted **academic** prose (paper
 
 | Term | Meaning |
 |------|---------|
-| **Layer 1** | General AI-tell catalog (inline in `SKILL.md`; sourced working catalog → `references/layers/layer-1-general-tells.md`, sources: Wikipedia "Signs of AI writing" + blader/humanizer) |
+| **Layer 1** | General AI-tell catalog (inline in `SKILL.md`; sourced working catalog → `references/layers/layer-1-general-tells.md`, 1.1–1.20 with strong/weak strength tags; sources: Wikipedia "Signs of AI writing" + blader/humanizer v3.1) |
 | **Layer 2** | Academic-specific tells → `references/layers/layer-2-academic-tells.md` |
 | **Layer 3** | Preserve scholarly constructs (hedging, passive, `we`) |
 | **Layer 4** | Claim↔evidence discipline — surface existing numbers, never invent |
@@ -33,7 +33,7 @@ Mechanical check: `scripts/validate_red_lines.py`. Layer 7 check: `scripts/valid
 
 - **Layer 7 loaded** — rules + auditor active for 社科摘要 / 科普段 / humanities intro cues (see SKILL.md "Document-style routing")
 - **Layer 7 injection** — hedging + `笔者认为` only in Discussion / Conclusion / Limitations / 政策含义; intro/摘要 get C7 cleanup only (density/blacklist in `references/layers/layer-7-academic-injection.md`)
-- **Rebuttal mode** — edits rebuttals (politeness + point-by-point); not a no-edit fallback
+- **Rebuttal mode** — edits rebuttals (politeness + point-by-point; lead with decision, then only agreement-changing evidence); not a no-edit fallback
 
 ## ADRs
 

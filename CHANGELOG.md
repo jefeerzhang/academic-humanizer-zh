@@ -4,6 +4,21 @@ All notable changes to this fork are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.6.1] — 2026-09
+
+### Added
+
+- Layer 1 patterns **1.19** (one-line closers / example restatement / staged run-up) and **1.20** (heading restated in the first sentence), adapted from [blader/humanizer](https://github.com/blader/humanizer) v3.1 §2 / §24 with academic caveats
+- Layer 1 **Strength** table (strong vs weak-alone) and paragraph-scale audit note
+- Rebuttal mode: lead with the decision, then only agreement-changing evidence ([blader/humanizer](https://github.com/blader/humanizer) §26 adapted)
+- `audit_tells.py` weak watch-list for 1.19
+
+### Changed
+
+- README: blader/humanizer pattern count 35 → **26** (v3.1)
+- Process audit/rewrite steps: prefer strong tells first; re-check closers / parallelisms / triads / dashes after draft
+- `CONTEXT.md`: Layer 1 range 1.1–1.20; rebuttal mode wording updated
+
 ## [0.6.0] — 2026-09
 
 ### Added
