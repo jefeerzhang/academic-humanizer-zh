@@ -1,6 +1,6 @@
 ---
 name: academic-humanizer-zh
-version: 0.6.0
+version: 0.6.1
 description: |
   Edit AI-assisted academic prose (papers, theses, rebuttals, reviews) and grant
   proposals (NSF Project Summary/Description, NIH Specific Aims, fellowship/foundation
@@ -61,10 +61,13 @@ casualizing, and (2) enforce the discipline a general humanizer misses:
    (paper vs. proposal) and the target venue or funding agency. For proposals, also apply
    Layer 6 and preserve appropriate vision.
 2. **Audit** (do not edit yet): list each detected pattern with its location and proposed
-   fix, and each empirical claim's evidence status. If the document-style signature routes
-   to **Layer 7** (Academic Injection, see "Document-style routing"), also write the
-   injection plan: cognitive hedging + ≤1 academic first-person, **only** in the
-   Discussion / Conclusion / Limitations / 政策含义 sections.
+   fix, and each empirical claim's evidence status. Prefer **strong** Layer 1 tells first
+   (see `references/layers/layer-1-general-tells.md` Strength); *weak alone* patterns need
+   company in the same passage. Look at **paragraph shape** as well as sentences. If the
+   document-style signature routes to **Layer 7** (Academic Injection, see
+   "Document-style routing"), also write the injection plan: cognitive hedging + ≤1
+   academic first-person, **only** in the Discussion / Conclusion / Limitations / 政策含义
+   sections.
 3. **Rewrite**: same structure and content, all claims and citations preserved, tells
    removed, over-claims matched to evidence, legitimate hedging kept. When Layer 7 is
    active, inject cognitive hedging / academic first-person **only** in Discussion /
@@ -72,7 +75,9 @@ casualizing, and (2) enforce the discipline a general humanizer misses:
    引言. Before rewriting, read `examples/before-after-zh-academic.md` to calibrate edit
    strength and output format (English prose: `examples/before-after.md`). When Layer 7 is
    loaded, also read `examples/before-after-zh-academic-injection.md` for injection
-   density and landing-zone calibration.
+   density and landing-zone calibration. After a draft, re-check tells that often survive
+   a first pass: negative parallelisms (1.7), one-line closers (1.19), rule-of-three (1.8),
+   em dashes (1.17).
 4. **Report**: cleaned text plus a short change log + a **diff** + an **unchanged-claim
    declaration**. Cover everything the original covered. When Layer 7 was active, run
    `scripts/validate_layer7_injection.py` on the before/after pair and report its exit
@@ -141,30 +146,26 @@ Layer 7 is **additive, never substitutive**: C0–C2 red lines run first, C4–C
 
 ## Layer 1: General AI-tell catalog (inline)
 
-Scan for and fix the general patterns, subject to the academic exceptions in Layer 3:
-inflated significance ("marking a pivotal moment"); superficial "-ing" tails that fake
-depth ("..., highlighting..."); promotional / figurative language ("rich", "vibrant",
-"groundbreaking"); vague attributions ("experts argue" with no cite); AI vocabulary
-(*delve, underscore, intricate, tapestry, testament, landscape (abstract), pivotal,
-showcase, foster, leverage (filler), realm, seamless, bolster, garner, meticulous,
-align with, gate/gated (figurative), vibrant, crucial, emphasize/emphasizing,
-highlight (verb)*); copula avoidance ("serves as"
-→ "is"); negative parallelisms ("not just X, but Y"); rule-of-three padding; elegant
-variation (flag only when several synonyms cycle for one referent in a paragraph — a single
-switch is not a tell); filler ("it is worth noting that", "in order to" — density, not
-single use); placeholder or unfilled template text ("[Describe...]", "INSERT_...",
-"202x-xx-xx", "[citation needed]" left in a draft); formulaic challenges-and-outlook
-("Despite these promising results, several challenges remain…" as a stock closing); fake
-deeper truth ("at its core", "what really matters"); defensive "not X" moves that answer an
-objection no one raised ("This is not to say…", "It should be noted that this does not
-imply…"); rejected fake alternatives ("A tempting approach would be…, but…");
-**overlong, clause-stacked sentences (split them; see 2.11)**;
-and **em-dashes (remove entirely; recast with commas, colons, parentheses, or
-separate sentences — an academic-register rule, not a detection claim: one dash alone is
-not evidence)**.
-
-> Full Layer 2 (academic-specific tells, 2.1–2.11) lives in
-> `references/layers/layer-2-academic-tells.md` and is loaded on demand.
+Scan for and fix the general patterns, subject to the academic exceptions in Layer 3.
+**Strong** tells (edit on one clear sighting): negative parallelisms ("not just X, but Y");
+placeholder / unfilled template text; fake deeper truth ("at its core", "what really
+matters"); defensive "not X" moves that answer an objection no one raised; rejected fake
+alternatives ("A tempting approach would be…, but…"); **one-line closers and example
+restatement** ("This shows the importance of…", "That distinction matters.", staged
+run-ups like "Here's the thing"); **heading restated in the first sentence** (heading +
+a line that only renames it).
+**Weak alone** (need company or density): inflated significance ("marking a pivotal
+moment"); superficial "-ing" tails; promotional / figurative language; vague attributions;
+AI vocabulary (*delve, underscore, intricate, tapestry, testament, landscape (abstract),
+pivotal, showcase, foster, leverage (filler), realm, seamless, bolster, garner,
+meticulous, align with, gate/gated (figurative), vibrant, crucial, emphasize/emphasizing,
+highlight (verb)*); copula avoidance ("serves as" → "is"); rule-of-three padding; elegant
+variation (flag only when several synonyms cycle for one referent in a paragraph); filler
+("it is worth noting that", "in order to" — density, not single use); formulaic
+challenges-and-outlook; knowledge-gap speculation; **em-dashes** (remove entirely; recast
+with commas, colons, parentheses, or separate sentences — an academic-register rule, not a
+detection claim: one dash alone is not evidence).
+Also fix **overlong, clause-stacked sentences** (split them; see 2.11).
 
 **Before:** *Additionally, an enduring testament to the method's value is its ability to
 delve into intricate dependencies, showcasing a seamless integration that underscores its
@@ -172,13 +173,13 @@ pivotal role.*
 **After:** *The method also captures higher-order dependencies, which the baselines miss
 (Table 2).*
 
-> Full Layer 1 working catalog — per-pattern watch-lists, before/after pairs, false-positive
-> guard, and academic adaptations — lives in
-> `references/layers/layer-1-general-tells.md` and is loaded on demand. Sources:
+> Full Layer 1 working catalog — per-pattern watch-lists, before/after pairs, strength
+> table, false-positive guard, and academic adaptations — lives in
+> `references/layers/layer-1-general-tells.md` and is loaded on demand (1.1–1.20). Sources:
 > Wikipedia ["Signs of AI writing"](https://en.wikipedia.org/wiki/Wikipedia:Signs_of_AI_writing)
-> (WikiProject AI Cleanup) and [blader/humanizer](https://github.com/blader/humanizer) (MIT).
-> When a "After" example here or in the catalog shows a number, it must already exist in the
-> author's tables or Before text — never invent magnitudes (C0).
+> (WikiProject AI Cleanup) and [blader/humanizer](https://github.com/blader/humanizer) v3.1
+> (MIT). When a "After" example here or in the catalog shows a number, it must already exist
+> in the author's tables or Before text — never invent magnitudes (C0).
 
 ---
 
@@ -268,9 +269,13 @@ of editing the wrong thing:
   bibliography entries; cite keys are sacred.
 - **`.tex` with mostly equations and macros** → edit only the prose inside the document
   text regions; never touch math environments, `\cite{}`, `\ref{}`, `\label{}`.
-- **Reviewer comments / rebuttal letter** → switch to **rebuttal mode** (politeness +
-  point-by-point structure); do not apply paper tightening or Layer 7 injection. Preserve
-  author `we` / `本研究`; edit for clarity and tone only.
+- **Reviewer comments / rebuttal letter** → switch to **rebuttal mode**: politeness +
+  point-by-point structure; **lead with the decision / answer**, then keep only the
+  evidence or constraint that would change whether the reviewer agrees — do not rebuild
+  the full diagnosis, restated problem, or proof-of-plan the reviewer already has from
+  their comment and the manuscript (blader/humanizer §26, adapted). Do not apply paper
+  tightening or Layer 7 injection. Preserve author `we` / `本研究`; edit for clarity and
+  tone only.
 - **Cover letter, response-to-reviewers, conference summary** → keep professional
   register; do not strip "we respectfully" politeness as AI fluff.
 - **Non-academic text (blog, marketing, README, chat)** → refuse and explain why.

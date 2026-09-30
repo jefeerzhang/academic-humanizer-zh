@@ -86,6 +86,11 @@ class TestAuditTells(unittest.TestCase):
         self.assertEqual(code, 1)
         self.assertFalse(any(f.severity == "fail" for f in findings))
 
+    def test_one_line_closer_warns(self):
+        text = "Accuracy rises by 4 points. This shows the importance of metadata."
+        self.assertEqual(exit_of(text), 1)
+        self.assertTrue(any("1.19" in f.rule for f in audit(text)[1]))
+
     # ----- Matching mechanics -----
 
     def test_word_boundary_matches_stems(self):
