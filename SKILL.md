@@ -1,21 +1,21 @@
 ---
 name: academic-humanizer-zh
-version: 0.6.1
+version: 0.6.2
 description: |
   Edit AI-assisted academic prose (papers, theses, rebuttals, reviews) and grant
-  proposals (NSF Project Summary/Description, NIH Specific Aims, fellowship/foundation
-  applications) so each claim is tied to its number, figure, or citation, and the voice
-  matches the author's own. Never alters numbers, results, equations, sample sizes,
-  dates, places, cite keys, or named methods/metrics. Not for blogs, marketing, or
-  personal essays, and not for evading AI-use disclosure.
+  proposals (NSF Summary/Description, NIH Specific Aims, fellowships) so each claim
+  ties to its number, figure, or citation and the voice matches the author's. Never
+  alters numbers, results, equations, sample sizes, dates, places, cite keys, or named
+  methods/metrics. Not for blogs, marketing, personal essays, or evading AI-use
+  disclosure.
 
-  Bridge to sibling skill `natural-chinese` for the "破+立双轨" academic injection
-  layer (Layer 7): cognitive hedging + first-person density limiting, applied only
-  in social-science abstracts / humanities introductions / 科普段落. C0–C2 red lines
-  always dominate. For non-academic Chinese prose (公众号 / 公文 / 商业 / 新闻 / 文学),
-  defer to sibling skill `natural-chinese`.
+  Bridges to sibling `natural-chinese` for the "破+立双轨" injection layer
+  (Layer 7: cognitive hedging + first-person density limiting) for social-science
+  abstracts / humanities intros / 科普段落 only. C0–C2 red lines dominate.
+  Non-academic Chinese prose (公众号 / 公文 / 商业 / 新闻 / 文学) defers
+  to `natural-chinese`.
 
-  TRIGGER on any of: "润色论文" / "润色一下" / "改写学术稿" / "去 AI 味"
+  TRIGGER: "润色论文" / "润色一下" / "改写学术稿" / "去 AI 味"
   / "academic humanizer" / "polish manuscript" / "edit my draft" / "match my voice"
   / "funding proposal review" / "NSF / NIH aims" / "Specific Aims"
   / "降低 AI 痕迹" / "学术改稿" / "reviewer-proof" / "submit-grade edit"

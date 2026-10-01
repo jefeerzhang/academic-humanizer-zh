@@ -4,6 +4,12 @@ All notable changes to this fork are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.6.2] — 2026-10-01
+
+### Fixed
+
+- frontmatter `description` trimmed 1114 → 999 chars to fit the pi loader's 1024-char limit; wording only, no content dropped — all 15 TRIGGER keywords, the C0–C2 red-line clause, and the `natural-chinese` bridge scope are preserved verbatim
+
 ## [0.6.1] — 2026-09
 
 ### Added
