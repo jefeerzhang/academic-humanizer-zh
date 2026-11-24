@@ -85,18 +85,25 @@ class TestRepoConsistency(unittest.TestCase):
         # Default calibration example is C7 academic, not injection.
         self.assertRegex(
             skill,
-            r"Before rewriting,\s+read `examples/before-after-zh-academic\.md`",
+            r"Before rewriting,\s+read\s+`examples/before-after-zh-academic\.md`",
         )
-        # Injection example only when Layer 7 is loaded/active.
-        self.assertRegex(
-            skill,
-            r"(?:[Ww]hen|[Ii]f) Layer 7\s+(?:is\s+)?(?:loaded|active)"
-            r".*before-after-zh-academic-injection\.md",
-            re.DOTALL,
-        )
+        # Injection example is legacy-only, and Layer 5 points to compare_author_style.py.
+        self.assertIn("before-after-zh-academic-injection.md", skill)
+        self.assertIn("compare_author_style.py", skill)
+        self.assertIn("disabled by default", skill.lower())
         # Exit 2 is Layer 7 FAIL, not "red-line only".
         self.assertNotRegex(skill, r"2 red-line violation")
         self.assertRegex(skill, r"2\s*=?\s*(?:FAIL|fail|失败)")
+
+    def test_skill_description_within_1024_char_limit(self):
+        skill = (REPO_ROOT / "SKILL.md").read_text(encoding="utf-8")
+        m = re.search(r"description:\s*\|\n((?:(?:  .*)?\n)+?)(?=license:)", skill)
+        self.assertIsNotNone(m, "SKILL.md frontmatter description not found")
+        desc = "".join(
+            (line[2:] if line.startswith("  ") else line)
+            for line in m.group(1).splitlines(True)
+        ).strip()
+        self.assertLessEqual(len(desc), 1024, f"description too long: {len(desc)} chars")
 
     def test_rules_zh_section9_does_not_claim_deleted_decision_tree(self):
         rules = (REPO_ROOT / "references" / "rules-zh.md").read_text(encoding="utf-8")

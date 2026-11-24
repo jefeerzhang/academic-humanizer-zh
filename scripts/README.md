@@ -3,9 +3,11 @@
 ## audit_tells.py
 
 Mechanical counterpart of the skill's "what still sounds AI-generated" step.
-Scans After text for Layer 1 residual AI tells from the sourced catalog
-(`references/layers/layer-1-general-tells.md`) — the watch-lists there are the
-script's input.
+Scans After text for:
+
+- English Layer 1 general tells (`references/layers/layer-1-general-tells.md`)
+- Chinese C7 academic tells A–F (`references/rules-zh.md` §1) with §10 whitelist guards
+- L2 sentence-length rhythm uniformity (variance / stdev / CV across prose sentences)
 
 ### Rules
 
@@ -13,7 +15,9 @@ script's input.
 | ---- | -------- | --------------- |
 | 1.10 placeholder / unfilled template | FAIL | `[Describe...]`, `[citation needed]`, `INSERT_*`, `202x-xx-xx` dates, `<URL>` |
 | 1.17 em / en dashes | FAIL | em dashes; en dashes outside numeric ranges (2–6%, 2020–2025 are fine). Chinese 破折号 `——` (incl. with bold markers around it) is standard punctuation and is NOT flagged |
-| 1.1–1.16, 1.19 weak tells | WARN | per-pattern watch-list hits (AI vocabulary, -ing tails, vague attributions, filler, one-line closers, ...). A single hit is often legit — review. ≥3 patterns co-occurring adds a co-occurrence WARN (the catalog's "several patterns together" bar). 1.20 heading restatement is not scanned (structural) |
+| 1.1–1.16, 1.19 weak tells (English) | WARN | per-pattern watch-list hits (AI vocabulary, -ing tails, vague attributions, filler, one-line closers, ...). A single hit is often legit — review. ≥3 patterns co-occurring adds a co-occurrence WARN |
+| C7.A–C7.F weak tells (Chinese) | WARN | 套话开头/过渡/收尾、价值判断词饱和、抽象主语、名词化虚化动词、排比三件套/过渡词混堆、假客观元评论. Respects §10 whitelist (`鉴于此，本文延续`, `进行了以下稳健性测试`, `总而言之`, `需要注意的是`, `核心解释变量`, `首先/其次/最后`) |
+| L2.rhythm sentence uniformity | WARN | Flat sentence-length distribution (`n >= 5` with `cv < 0.18` or 5 consecutive uniform-length sentences) |
 | `[N]`-style inline citations | never | sacred under C0; not placeholders |
 
 ### Usage
@@ -28,14 +32,47 @@ Plain file:
 
 ### Exit codes (CI-friendly)
 
-- 0  No strict hits, no weak-tell hits.
-- 1  Weak tells present — human review recommended.
+- 0  No strict hits, no weak-tell hits, no rhythm uniformity warning.
+- 1  Weak tells or flat sentence rhythm present — human review recommended.
 - 2  Strict tell present (placeholder, em dash, or non-range en dash) — must fix.
 - 3  Unexpected crash — never conflated with WARN.
 
 ### Regression tests
 
     python scripts/test_audit_tells.py
+
+## compare_author_style.py
+
+Layer 5 author-sample voice comparator (replaces fixed-phrase Layer 7 injection).
+Extracts a measurable style baseline from the author's own prior paper or draft
+and compares it against the edited text across sentence-length distribution
+(mean / stdev / CV), self-reference conventions (`本文` / `本研究` / `笔者` / `我们`
+or `we` / `this paper`), connective vocabulary, and natural hedging density.
+
+### Usage
+
+Inspect an author sample's baseline:
+
+    python3 scripts/compare_author_style.py --sample prior_paper.md --profile-only
+
+Compare a cleaned draft against the author sample:
+
+    python3 scripts/compare_author_style.py --sample prior_paper.md --after edited.md
+
+Compare against `## After` spans in a combined markdown file:
+
+    python3 scripts/compare_author_style.py --sample prior_paper.md --combined examples/before-after-zh-academic.md
+
+### Exit codes
+
+- 0  PASS — rewrite stays within the author sample's style envelope.
+- 1  WARN — measurable style drift (length, rhythm flattening, foreign self-reference, foreign connectives, or hedging drift).
+- 2  FAIL — invalid arguments or missing file.
+- 3  Unexpected crash.
+
+### Regression tests
+
+    python scripts/test_compare_author_style.py
 
 ## validate_red_lines.py
 

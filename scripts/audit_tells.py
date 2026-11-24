@@ -1,25 +1,24 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-audit_tells.py — Academic Humanizer Layer 1 residual AI-tell auditor.
+audit_tells.py — Academic Humanizer Layer 1 + C7 residual AI-tell auditor.
 
-After an editing pass, scan the After text for general AI tells from the
-sourced Layer 1 catalog (`references/layers/layer-1-general-tells.md`), so the
-skill's "what still sounds AI-generated" step has a mechanical counterpart,
-not just prose.
+After an editing pass, scan the After text for:
+  - English Layer 1 general AI tells (`references/layers/layer-1-general-tells.md`)
+  - Chinese C7 academic AI tells A–F (`references/rules-zh.md` §1) with §10 whitelist guards
+  - L2 sentence-length rhythm uniformity (variance / stdev / CV across prose sentences)
 
 Strict rules (the skill removes these outright in academic register):
   1.10 placeholder / unfilled template text
   1.17 em dashes, and en dashes outside numeric ranges (2–6%, 2020–2025 are fine)
 
 Weak rules (context-dependent; several patterns together are the tell, per the
-catalog's false-positive guard): 1.1 inflated significance, 1.2 -ing tails,
-1.3 promotional language, 1.4 vague attributions, 1.5 AI vocabulary,
-1.6 copula avoidance, 1.7 negative parallelisms, 1.9 vague connection,
-1.11 formulaic challenges-and-outlook, 1.12 knowledge-gap speculation,
-  1.13 fake deeper truth, 1.14 defensive "not X" moves, 1.15 rejected fake
-  alternatives, 1.16 filler, 1.19 one-line closers / example restatement.
-  (1.20 heading restatement is structural and not mechanically scanned.)
+catalog's false-positive guard):
+  - Layer 1 (English): 1.1–1.16, 1.19
+  - C7 (Chinese): C7.A (formulaic openers/transitions/closers), C7.B (value-judgment
+    saturation), C7.C (abstract subjects), C7.D (nominalized empty verbs),
+    C7.E (rule-of-three / stacked transitions), C7.F (meta-commentary / vague consensus)
+  - L2.rhythm: flat sentence-length uniformity (low CV or 5+ consecutive uniform-length sentences)
 
 Usage:
     # One combined markdown with "## Before" / "## After" sections
@@ -34,7 +33,7 @@ Usage:
 
 Exit codes:
     0  PASS  — no strict hits, no weak-tell patterns with hits
-    1  WARN  — weak tells present (review; a single instance is often legit)
+    1  WARN  — weak tells or flat sentence rhythm present (review)
     2  FAIL  — strict tell present (placeholder, em dash, or non-range en dash)
     3  Unexpected crash — never conflated with WARN
 """
@@ -43,6 +42,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import re
 import sys
 from dataclasses import dataclass, field, asdict
@@ -63,6 +63,14 @@ class TellPattern:
     name: str
     strict: bool
     terms: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class RegexTellPattern:
+    pid: str
+    name: str
+    regexes: tuple[re.Pattern[str], ...]
+    whitelist: tuple[re.Pattern[str], ...] = ()
 
 
 # Literal phrases: single tokens match as word prefixes (\bterm\w*), phrases as
@@ -150,6 +158,91 @@ PATTERNS: tuple[TellPattern, ...] = (
     )),
 )
 
+# Chinese C7 academic AI-tell patterns (`references/rules-zh.md` §1 A–F).
+# Whitelist guards follow `references/rules-zh.md` §0, §2, §10 (do not flag
+# 总而言之 / 需要注意的是 / 核心解释变量 / 鉴于此，本文延续 / 方法论 进行检验·回归·稳健性测试).
+ZH_PATTERNS: tuple[RegexTellPattern, ...] = (
+    RegexTellPattern(
+        "C7.A",
+        "中文套话开头/过渡/收尾",
+        (
+            re.compile(r"随着[^。！？\n]{1,20}的(?:不断|迅速|快速|蓬勃|持续)?发展"),
+            re.compile(r"在[^。！？\n]{1,18}背景下"),
+            re.compile(r"近年来[，,]?[^。！？\n]{0,28}(?:日益|广泛关注|受到关注|蓬勃发展|迅速扩大|迅速发展)"),
+            re.compile(r"众所周知|不言而喻|自工业革命以来"),
+            re.compile(r"基于以上分析|通过以上讨论|概括而言|有鉴于此"),
+            re.compile(r"(?<!有)鉴于此(?![，,]\s*本文延续)"),
+            re.compile(r"为[^。！？\n]{1,22}提供了新的思路"),
+            re.compile(r"为[^。！？\n]{1,22}开辟了"),
+            re.compile(r"对[^。！？\n]{1,20}具有重要(?:的)?参考价值"),
+            re.compile(r"具有重要(?:的)?理论意义和实践价值"),
+            re.compile(r"为[^。！？\n]{1,26}贡献了力量"),
+            re.compile(r"未来值得进一步深入研究|有待后续研究进一步验证|未来依然可期|前景广阔"),
+            re.compile(r"这正是[^。！？\n]{1,18}的意义所在"),
+        ),
+        whitelist=(
+            re.compile(r"鉴于此[，,]\s*本文延续"),
+        ),
+    ),
+    RegexTellPattern(
+        "C7.B",
+        "中文价值判断词饱和",
+        (
+            re.compile(r"具有重要意义"),
+            re.compile(r"发挥(?:了)?关键作用|起到(?:了)?重要作用"),
+            re.compile(r"揭示了[^。！？\n]{1,28}的关键作用"),
+            re.compile(r"不可忽视|日益显著|深刻变化|深远影响|开创性的|前所未有的"),
+            re.compile(r"明确下一步|系统性缺陷|广泛落地"),
+        ),
+    ),
+    RegexTellPattern(
+        "C7.C",
+        "中文抽象主语代替施动者",
+        (
+            re.compile(r"(?:时代|社会|科技|行业)的发展"),
+            re.compile(r"消费观念正在发生|人类社会经历了"),
+        ),
+    ),
+    RegexTellPattern(
+        "C7.D",
+        "中文名词化虚化动词",
+        (
+            re.compile(r"进行(?:优化|调整|改进|探讨|提升|完善|推进)"),
+            re.compile(r"做出(?:选择|判断|贡献|决策)"),
+            re.compile(r"实现(?:增长|突破|提升|跨越)"),
+            re.compile(r"采取措施|加以改进|给予支持|提供保障"),
+            re.compile(r"(?:起到|发挥)[^。！？\n]{0,4}作用"),
+        ),
+        whitelist=(
+            re.compile(r"进行(?:了)?(?:以下)?(?:稳健性)?(?:分析|检验|回归|测试|估计)"),
+        ),
+    ),
+    RegexTellPattern(
+        "C7.E",
+        "中文排比三件套/过渡词堆叠",
+        (
+            re.compile(r"既是[^。！？\n]{1,22}也是[^。！？\n]{1,22}更是"),
+            re.compile(r"不仅[^。！？\n]{1,22}而且[^。！？\n]{1,22}更"),
+            re.compile(r"理论意义、实践意义、方法论意义"),
+        ),
+    ),
+    RegexTellPattern(
+        "C7.F",
+        "中文假客观/元评论",
+        (
+            re.compile(r"(?:本研究|本文)(?:试图|旨在)探讨"),
+            re.compile(r"下面我们来看|接下来我们将"),
+            re.compile(r"诸多研究表明|大量研究证实|学界普遍认为|计量学界形成共识"),
+            re.compile(r"存在一些局限性"),
+        ),
+    ),
+)
+
+_EN_ABBREV_RE = re.compile(
+    r"\b(?:e\.g|i\.e|et al|vs|Fig|Eq|Sec|No|Dr|Mr|Ms|Prof|Inc|Ltd)\.",
+    re.IGNORECASE,
+)
+
 # 1.10 placeholders: bracket drafting-notes, INSERT_/PASTE_ tokens, <URL>,
 # and XX dates. `[N]`-style inline citations and bare "[...]" are NOT flagged.
 PLACEHOLDER_RES = (
@@ -188,6 +281,145 @@ _DASH_TEXT_CLEAN = re.compile(r"\*\*|(?<!\*)\*(?!\*)|\x60|(?<!_)_(?!_)")
 
 def _dash_clean(text: str) -> str:
     return _DASH_TEXT_CLEAN.sub("", text)
+
+
+def _clean_prose_text(text: str) -> str:
+    """Extract editable prose, skipping fenced code blocks and markdown tables."""
+    in_fence = False
+    lines: list[str] = []
+    for line in text.splitlines():
+        stripped = line.lstrip()
+        if stripped.startswith("```"):
+            in_fence = not in_fence
+            continue
+        if in_fence or stripped.startswith("|") or stripped.startswith("#"):
+            continue
+        if stripped.startswith(">"):
+            line = re.sub(r"^\s*>\s?", "", line)
+        lines.append(line)
+    return _dash_clean("\n".join(lines))
+
+
+def scan_zh_pattern(pattern: RegexTellPattern, text: str) -> list[str]:
+    """Return deduped Chinese C7 matches in *text* (max 6), respecting whitelists."""
+    prose = _clean_prose_text(text)
+    if not re.search(f"[{_CJK}]", prose):
+        return []
+    hits: list[str] = []
+    for rx in pattern.regexes:
+        for m in rx.finditer(prose):
+            window_start = max(0, m.start() - 8)
+            window_end = min(len(prose), m.end() + 12)
+            window = prose[window_start:window_end]
+            if any(wl.search(window) for wl in pattern.whitelist):
+                continue
+            snippet = m.group(0).strip()
+            if snippet and snippet not in hits:
+                hits.append(snippet)
+            if len(hits) >= 6:
+                return hits
+    return hits
+
+
+def scan_zh_transition_stack(text: str) -> list[str]:
+    """Flag C7.E mixed transition stacking within one paragraph:
+    首先 + 其次 + (同时|此外|再者). Pure 首先/其次/最后 is whitelisted."""
+    prose = _clean_prose_text(text)
+    hits: list[str] = []
+    for para in re.split(r"\n\s*\n", prose):
+        if "首先" in para and "其次" in para:
+            extra = [w for w in ("同时", "此外", "再者") if w in para]
+            if extra:
+                tag = f"首先+其次+{'/'.join(extra)}"
+                if tag not in hits:
+                    hits.append(tag)
+    return hits
+
+
+def _sentence_unit_length(sentence: str, is_zh: bool) -> int:
+    if is_zh:
+        cjk_chars = len(re.findall(f"[{_CJK}]", sentence))
+        latin_tokens = len(re.findall(r"[A-Za-z0-9]+(?:[._-][A-Za-z0-9]+)*", sentence))
+        return cjk_chars + latin_tokens
+    return len(re.findall(r"[A-Za-z0-9]+(?:['-][A-Za-z0-9]+)*", sentence))
+
+
+def sentence_rhythm_stats(text: str) -> dict:
+    """Compute sentence-length variance / stdev / CV on prose paragraphs.
+
+    Detects L2 flat sentence rhythm (low CV or 5+ consecutive uniform-length
+    sentences, matching `references/rules-zh.md` §4).
+    """
+    prose = _clean_prose_text(text)
+    # Skip bullet-list-only lines (e.g. partial diff summaries) from rhythm stats
+    body_lines = [
+        ln for ln in prose.splitlines()
+        if ln.strip() and not re.match(r"^\s*[-*+]\s+", ln)
+    ]
+    body = "\n".join(body_lines)
+    cjk_count = len(re.findall(f"[{_CJK}]", body))
+    latin_count = len(re.findall(r"[A-Za-z]+", body))
+    is_zh = cjk_count >= latin_count
+
+    if is_zh:
+        raw_sents = re.split(r"[。！？!?]+|\n+", body)
+        min_len = 5
+    else:
+        masked = _EN_ABBREV_RE.sub(lambda m: m.group(0).replace(".", ""), body)
+        raw_sents = re.split(r"(?<=[.!?])\s+|\n+", masked)
+        min_len = 4
+
+    lengths = [
+        _sentence_unit_length(s.strip(), is_zh)
+        for s in raw_sents
+        if s.strip()
+    ]
+    lengths = [n for n in lengths if n >= min_len]
+    n = len(lengths)
+    if n == 0:
+        return {
+            "language": "zh" if is_zh else "en",
+            "sentence_count": 0,
+            "mean": 0.0,
+            "variance": 0.0,
+            "stdev": 0.0,
+            "cv": 0.0,
+            "min": 0,
+            "max": 0,
+            "uniform_window": False,
+            "flag": False,
+        }
+
+    mean = sum(lengths) / n
+    variance = sum((x - mean) ** 2 for x in lengths) / n
+    stdev = math.sqrt(variance)
+    cv = (stdev / mean) if mean > 0 else 0.0
+
+    # Window check: 5 consecutive sentences within a narrow band
+    band_lo, band_hi, max_span = (20, 35, 8) if is_zh else (15, 28, 6)
+    uniform_window = False
+    if n >= 5:
+        for i in range(n - 4):
+            win = lengths[i:i + 5]
+            if all(band_lo <= x <= band_hi for x in win) and (max(win) - min(win)) <= max_span:
+                uniform_window = True
+                break
+
+    min_mean = 15.0 if is_zh else 10.0
+    flag = n >= 5 and mean >= min_mean and (cv < 0.18 or uniform_window)
+
+    return {
+        "language": "zh" if is_zh else "en",
+        "sentence_count": n,
+        "mean": round(mean, 2),
+        "variance": round(variance, 2),
+        "stdev": round(stdev, 2),
+        "cv": round(cv, 3),
+        "min": min(lengths),
+        "max": max(lengths),
+        "uniform_window": uniform_window,
+        "flag": flag,
+    }
 
 
 def scan_pattern(pattern: TellPattern, text: str) -> list[str]:
@@ -274,25 +506,36 @@ def audit(text: str) -> tuple[int, list[Finding]]:
             {"examples": ph[:5]},
         ))
 
-    # ----- Weak rules: context-dependent, several together are the tell -----
+    # ----- Weak rules: Layer 1 (English) + C7 (Chinese) -----
     weak: dict[str, list[str]] = {}
+    pattern_names: dict[str, str] = {}
     for pat in PATTERNS:
         if pat.pid in ("1.10", "1.17"):
             continue
+        pattern_names[pat.pid] = pat.name
         hits = scan_pattern(pat, text)
         if hits:
             weak[pat.pid] = hits
 
+    for zpat in ZH_PATTERNS:
+        pattern_names[zpat.pid] = zpat.name
+        hits = scan_zh_pattern(zpat, text)
+        if zpat.pid == "C7.E":
+            for stack_hit in scan_zh_transition_stack(text):
+                if stack_hit not in hits:
+                    hits.append(stack_hit)
+        if hits:
+            weak[zpat.pid] = hits
+
     for pid, hits in sorted(weak.items()):
-        pat = next(p for p in PATTERNS if p.pid == pid)
         findings.append(Finding(
-            f"{pid} {pat.name}", "warn",
+            f"{pid} {pattern_names[pid]}", "warn",
             f"{len(hits)} weak-tell match(es) — verify context before deciding.",
             {"matches": hits},
         ))
     if len(weak) >= 3:
         patterns = ", ".join(
-            f"{pid} {next(p for p in PATTERNS if p.pid == pid).name}"
+            f"{pid} {pattern_names[pid]}"
             for pid in sorted(weak)
         )
         findings.append(Finding(
@@ -301,10 +544,24 @@ def audit(text: str) -> tuple[int, list[Finding]]:
             {"patterns": patterns},
         ))
 
+    # ----- L2 sentence-length rhythm uniformity -----
+    rhythm = sentence_rhythm_stats(text)
+    if rhythm["flag"]:
+        findings.append(Finding(
+            "L2.rhythm sentence uniformity", "warn",
+            (
+                f"Sentence lengths are unusually uniform "
+                f"(n={rhythm['sentence_count']}, mean={rhythm['mean']}, "
+                f"stdev={rhythm['stdev']}, cv={rhythm['cv']}). Vary sentence length."
+            ),
+            rhythm,
+        ))
+
     if not findings:
         findings.append(Finding(
             "summary", "info",
-            "No Layer 1 residual AI tells detected in After text.",
+            "No Layer 1 / C7 residual AI tells detected in After text.",
+            {"rhythm": rhythm} if rhythm["sentence_count"] > 0 else {},
         ))
 
     has_fail = any(f.severity == "fail" for f in findings)

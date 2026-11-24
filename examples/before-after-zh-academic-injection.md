@@ -1,114 +1,78 @@
 <!--
-Layer 7 academic-injection before/after example (v0.5.0 新增).
-Pairs with references/layers/layer-7-academic-injection.md and references/rules-zh.md §9.
+Layer 7 legacy boundary & no-template-injection before/after example (updated in v0.7.0).
+Pairs with references/layers/layer-7-academic-injection.md, references/rules-zh.md §9,
+and Layer 5 author-sample calibration (`scripts/compare_author_style.py`).
 
-Demonstrates three Chinese academic paragraph types with Layer 7 routing:
-  1. 社科摘要 — Layer 7 loaded; injection in Discussion/Limitations
-  2. 科普段落 — Layer 7 loaded; injection in Discussion
-  3. 引言人文叙述 — Layer 7 loaded but **injection disabled** (C7 cleanup only; intro is not a hedging landing zone)
-
-C0–C2 red lines (numbers, citations, named methods) remain unchanged.
-Layer 7 adds ONLY:
-  - cognitive hedging in Discussion / Conclusion (1–3 hits per 1000 chars)
-  - one academic first-person (笔者认为 / 本研究倾向于)
-  - no emoji, no 小红书体, no 口语第一人称
+As of v0.7.0, fixed-phrase Layer 7 injection ("笔者认为", "样本限制使…需谨慎对待")
+is DISABLED by default to avoid introducing new template-AI tells or fabricating
+ungrounded claims (C1). This example demonstrates:
+  1. 社科摘要 — C7 cleanup + varied sentence rhythm, NO stock phrase injection
+  2. 讨论与局限段 — C7 cleanup keeping ONLY limitations already stated in Before (no invented claims, no "在 Discussion 段" meta-label leak)
+  3. 引言人文叙述 — C7 cleanup only (intro never receives hedging injection)
 
 Verify with:
-  python scripts/validate_red_lines.py examples/before-after-zh-academic-injection.md --combined
-  python scripts/validate_layer7_injection.py examples/before-after-zh-academic-injection.md --combined
+  python scripts/validate_red_lines.py --combined --all-pairs examples/before-after-zh-academic-injection.md
+  python scripts/validate_layer7_injection.py --combined --all-pairs examples/before-after-zh-academic-injection.md
+  python scripts/audit_tells.py --combined examples/before-after-zh-academic-injection.md
 -->
 
-# Before / After · 中文学术 + Layer 7 注入（v0.5.0 新增示例）
+# Before / After · 中文学术与 Layer 7 停用边界示例（v0.7.0 更新）
 
-> 用途：演示 Layer 7「学术注入层」在社科摘要 / 科普段 / 人文引言上的路由与注入边界。
-> 示例 1–2：**加载 + 注入**；示例 3：**加载但不注入**（引言段仅 C7 清机器味）。
-> 配套规则：`references/rules-zh.md` §9 + `references/layers/layer-7-academic-injection.md`。
-> C0–C2 红线：数字、引用、命名术语一字不动；Layer 7 仅在 Discussion / Conclusion / Limitations 注入 cognitive hedging + ≤1 处学术合规第一人称。
+> 用途：演示 v0.7.0 起**停用 Layer 7 固定短语注入**后的改写规范——只清理 C7 病灶、保留原稿原有局限、调节长短句节奏，不再强行拼入「在 Discussion 段，笔者认为」或编造原稿没有的推测。
+> 若需对齐个人写作风格，改为提供作者历史样本并运行 `scripts/compare_author_style.py`。
+> 配套规则：`SKILL.md` Layer 5 + `references/rules-zh.md` §9 + `references/layers/layer-7-academic-injection.md`（遗留防线）。
 
 ---
 
 ## 场景假设
 
-- **目标期刊**：中文社科期刊（C 刊级别），接受「在学术 register 上稍微松一点」的摘要与科普段写法
-- **学术规范**：第一人称「本研究 / 笔者认为」、保留统计学语言（"显著""正向"）、保留所有数字、保留方法术语（discrete choice experiment）、不抒情收尾
-- **Layer 7 启用判据**：用户口头要求「摘要松一松 / 科普段落自然化」或自动检测到「政策含义 / 研究启示 / 局限」等学术段标记
-- **机器味要清的**：套话开头、空话过渡、价值判断饱和、抽象主语堆砌、套话收尾、宏大叙事
-- **人味要立的**：≤1 处学术合规第一人称（Discussion 段）+ 1–3 处认知边界留白（Discussion / Limitations 段）
+- **目标期刊**：中文社科期刊（C 刊级别）
+- **学术规范**：遵循作者原稿自称（「本研究 / 本文」）、保留统计学语言、保留全部数字与方法术语、不编造原稿没有的局限或归因（C0–C2）
+- **Layer 7 策略（v0.7.0）**：默认停用固定短语注入；`validate_layer7_injection.py` 仅作防线检查（拦截口语黑名单、禁用段污染、正文元标签泄漏与单段模板堆砌）
 
 ---
 
-## 示例 1 · 社科摘要
+## 示例 1 · 社科摘要（仅 C7 清理，不注入固定短语）
 
-## Before（典型 AI 味 + 无 cognitive hedging）
+## Before（典型 AI 味）
 
 > 近年来，随着中国外卖服务规模的迅速扩大，对环境产生了日益显著的影响。为推动低碳消费，中国政府于 2023 年出台了《绿色外卖管理规范》，要求外卖企业减少包装、使用环保材料，从而降低碳排放。鉴于外卖服务在大学生群体中具有较高的普及率，本研究旨在探讨在线外卖平台披露碳标签和包装材料等环境信息是否影响大学生的消费选择。本研究于 2023 年 8 月在川渝地区对 692 名大学生开展了匿名问卷调查，并采用离散选择模型分析了碳足迹及其他环境属性披露对消费者偏好的影响。研究发现：首先，相较高碳足迹外卖，大学生对低碳足迹外卖表现出显著的正向偏好，表明其选择存在异质性，并愿意为此多支付 1.65 美元；其次，消费者同样偏好采用环保包装的外卖；同时，男性、具有积极环保态度的、以及环保知识水平较高的大学生更倾向于选择低碳足迹外卖；环保知识水平较高者也更偏好环保包装选项。本研究揭示了碳标签信息披露在引导大学生选择环保外卖中的关键作用，为实现低碳目标开辟了一条切实可行的路径，为推动年轻一代养成高效的外卖饮食习惯贡献了力量。
 
-## After（Layer 1–5 + C7 + Layer 7 启用：Discussion 段加 ≤1 处第一人称 + Limitations 段加 cognitive hedging）
+## After（Layer 1–5 + C7：清理病灶、打破等长句节奏、不硬塞固定模板）
 
-> 中国外卖服务规模的迅速扩大对环境造成的影响，是 2023 年《绿色外卖管理规范》出台的直接背景，该规范要求外卖企业减少包装、使用环保材料；大学生是外卖的高频用户，但碳标签与包装材料等环境信息披露对其选择的影响尚未得到充分检验。本研究于 2023 年 8 月在川渝地区对 692 名大学生开展匿名问卷调查，采用离散选择实验分析碳足迹及包装材料披露对消费偏好的影响。回归结果显示：相较于高碳足迹外卖，受访大学生对低碳足迹外卖存在显著正向偏好，支付意愿高出 1.65 美元，受访者同样偏好环保包装；异质性方面，男性、具有积极环保态度的、以及环境知识水平较高的大学生更倾向于选择低碳足迹外卖，环境知识水平较高者对环保包装的支付意愿也更高。在 Discussion 段，**笔者认为**，这一差异主要源于受访者对"碳标签"的认知差异，而非对环保包装本身的偏好；**目前尚不清楚**碳标签对偏好的具体作用机制是否同样适用于非学生群体；**样本限制使**结论对全国范围的推广**需谨慎对待**——**这一发现有待**跨地区样本验证。在政策含义上，在线外卖平台应将碳足迹与包装材料作为默认披露属性，以降低大学生选择高碳外卖的概率。
+> 中国外卖服务规模的迅速扩大对环境造成的影响，是 2023 年《绿色外卖管理规范》出台的直接背景；该规范要求外卖企业减少包装、使用环保材料。大学生是外卖的高频用户，但碳标签与包装材料等环境信息披露对其选择的影响尚未得到充分检验。本研究于 2023 年 8 月在川渝地区对 692 名大学生开展匿名问卷调查，采用离散选择实验分析碳足迹及包装材料披露对消费偏好的影响。回归结果显示：相较于高碳足迹外卖，受访大学生对低碳足迹外卖存在显著正向偏好，支付意愿高出 1.65 美元。受访者同样偏好环保包装。异质性方面，男性、具有积极环保态度的、以及环境知识水平较高的大学生更倾向于选择低碳足迹外卖；环境知识水平较高者对环保包装的支付意愿也更高。在政策含义上，在线外卖平台应将碳足迹与包装材料作为默认披露属性，以降低大学生选择高碳外卖的概率。
 
 ### 修改对照（每条对应 Layer + C0–C2 检查）
 
 | # | Before | After | 对应规则 | 为什么这样改 |
 |---|---|---|---|---|
-| 1 | "近年来，随着……" | "中国外卖服务规模的迅速扩大对环境造成的影响，是……出台的直接背景" | 病灶 A（套话开头） | "近年来 / 随着……的发展"是 AI 八股；直接交代背景与文件 |
+| 1 | "近年来，随着……" | "中国外卖服务规模的迅速扩大对环境造成的影响，是……出台的直接背景" | 病灶 A（套话开头） | 去掉 AI 八股开头，直接交代政策背景 |
 | 2 | "为推动低碳消费" | （删） | 病灶 A（动机套话） | 政策目标复述不是研究发现 |
 | 3 | "日益显著的影响" | "对环境造成的影响" | 病灶 B（价值判断词饱和） | "日益显著"无证据指向 |
-| 4 | "发挥了关键作用 / 起到重要作用" → "为……开辟了一条切实可行的路径，为推动……贡献了力量" | "在政策含义上，在线外卖平台应将……" | 病灶 A（抒情收尾） + 病灶 F（元评论） | 抒情 + 元评论双重 AI 痕迹；换成具体政策含义 |
-| 5 | （无第一人称 / 无 hedging） | Discussion 段加 **"笔者认为"**；Limitations 段加 **"目前尚不清楚"** + **"样本限制使……需谨慎对待"** + **"这一发现有待……验证"** | Layer 7 §7.4 + §7.3 | 用户口头要求"摘要松一松" → Layer 7 启用；第一人称 1 处 ≤上限；hedge 3 处 / 1 处 ≈ 千字，落在 Discussion + Limitations，**未污染** Results / Methods |
+| 4 | "揭示了……的关键作用，为……开辟了一条切实可行的路径，为推动……贡献了力量" | "在政策含义上，在线外卖平台应将……" | 病灶 A（抒情收尾）+ 病灶 B | 去掉抒情套话，改为具体政策含义 |
+| 5 | （旧版曾硬塞「在 Discussion 段，笔者认为……目前尚不清楚……样本限制使……需谨慎对待」） | **移除固定模板注入**，拆出 12 字短句「受访者同样偏好环保包装。」 | v0.7.0 停用 Layer 7 + L2.rhythm + C1 | 不编造原稿没有的归因与局限，不泄漏「在 Discussion 段」元标签，用真实长短句变化替代模板拼装 |
 | 6 | C0–C2（692 / 1.65 / 2023 年 8 月 / 川渝 / 离散选择实验 / 碳标签） | C0–C2 一字未动 | C0.1 / C0.2 / C0.3 / C0.5 / C2 | **不动** |
-| 7 | "并愿意为此多支付 1.65 美元" | "支付意愿高出 1.65 美元" | Layer 4（claim ↔ evidence）+ rules-zh §3 句式冗余 | "并愿意"含糊，去掉 |
-
-### C0–C2 红线核对
-
-| 红线项 | 出现次数 | Before / After 一致？ |
-|---|---:|---|
-| 数字 `692` | 1 / 1 | ✅ |
-| 数字 `1.65` | 1 / 1 | ✅ |
-| `*p* < 0.05` | 0 / 0 | ✅ |
-| 引用 `(Smith, 2020)` 等 | 0 / 0 | ✅ |
-| 日期 `2023 年 8 月` | 1 / 1 | ✅ |
-| 命名术语 `discrete choice experiment` / `离散选择实验` | 1 / 1 | ✅ |
-| 命名术语 `碳标签` / `环保包装` | 多 / 多 | ✅ |
-### Layer 7 注入密度核对
-
-| 检查项 | 命中数 | 上限 | 通过？ |
-|---|---:|---|---|
-| 学术第一人称 | 1（"笔者认为"） | ≤1 | ✅ |
-| cognitive hedging | 3（"目前尚不清楚" / "样本限制使……需谨慎对待" / "这一发现有待……验证"） | 1–3 / 千字 | ✅（1.6 / 千字） |
-| 反人味黑名单（emoji / 小红书体 / 口语第一人称） | 0 | 0 | ✅ |
-| hedge 落 Results / Methods / preamble | 0 | 0 | ✅（全部在 Discussion / Limitations） |
 
 ---
 
-## 示例 2 · 科普段落（Discussion 段）
+## 示例 2 · 讨论与局限段（仅保留原稿原有局限，不编造新推测）
 
 ## Before
 
 > 综上所述，本研究通过离散选择实验验证了碳标签信息披露对大学生消费偏好的显著正向影响，这一发现具有重要的理论意义和实践价值。未来研究可以进一步扩大样本范围，纳入不同年龄段和职业背景的受访者，以验证本研究结论的外部效度。同时，本研究也存在一些局限性，例如样本仅限于川渝地区的大学生，调查结果可能受到当地文化和饮食习惯的影响。未来的研究可以通过跨地区比较来进一步检验本研究的发现，为相关政策的制定提供更有力的参考依据。
 
-## After（Layer 7 启用：保留"局限性"，加 cognitive hedging + 删空话）
+## After（C7 清理：删套话，保留原稿已给出的样本与跨地区检验边界）
 
-> 本研究通过离散选择实验验证了碳标签信息披露对大学生消费偏好的显著正向影响。在 Discussion 段，**本研究倾向于**将该异质性归因于环保知识水平，而非收入或性别。**样本限制使**该结论对全国范围的推广**需谨慎对待**——川渝地区大学生的样本结构可能在文化与饮食习惯上与北方或沿海省份存在系统性差异。
+> 本研究通过离散选择实验验证了碳标签信息披露对大学生消费偏好的显著正向影响。受限于样本仅覆盖川渝地区大学生，调查结果可能受到当地文化与饮食习惯的影响。后续研究需要纳入不同年龄段和职业背景的受访者，并通过跨地区比较检验结论的外部效度。
 
 ### 修改对照
 
 | # | Before | After | 对应规则 |
 |---|---|---|---|
-| 1 | "综上所述……具有重要的理论意义和实践价值" | （砍套话开头 / 价值判断词饱和） | 病灶 A + 病灶 B |
-| 2 | "未来研究可以进一步扩大样本范围" | （换成具体边界条件） | 病灶 A（抒情空话） |
-| 3 | "本研究也存在一些局限性"（元评论） | （直接陈述） | 病灶 F（元评论） |
-| 4 | （无第一人称） | "本研究倾向于将……归因于……" | Layer 7 §7.4（学术第一人称 1 处） |
-| 5 | （无 hedging） | "样本限制使……需谨慎对待" | Layer 7 §7.3（认知边界留白） |
-
-### Layer 7 注入密度核对
-
-| 检查项 | 命中数 | 上限 | 通过？ |
-|---|---:|---|---|
-| 学术第一人称 | 1 | ≤1 | ✅ |
-| cognitive hedging | 2 | 1–3 / 千字 | ✅ |
-| 反人味黑名单 | 0 | 0 | ✅ |
-| hedge 落 Results / Methods | 0 | 0 | ✅ |
+| 1 | "综上所述……具有重要的理论意义和实践价值" | （删套话开头与价值判断词） | 病灶 A + 病灶 B |
+| 2 | "同时，本研究也存在一些局限性，例如……" | "受限于样本仅覆盖川渝地区大学生……" | 病灶 F（元评论） |
+| 3 | "为相关政策的制定提供更有力的参考依据" | （删抒情收尾） | 病灶 A（抒情收尾） |
+| 4 | （旧版曾硬塞「在 Discussion 段，本研究倾向于……北方或沿海省份」） | **不编造原稿没有的归因与地区对比** | C1 + v0.7.0 停用 Layer 7 固定短语注入 |
 
 ---
 
@@ -118,7 +82,7 @@ Verify with:
 
 > 自工业革命以来，人类社会经历了前所未有的技术变革，人工智能的崛起更是引发了广泛的关注与深刻的反思。在这样的时代背景下，人文学者不得不重新审视自身的研究范式，以应对技术对人类生活方式的深远影响。本文旨在探讨人工智能时代人文学科的转型路径，并提出若干政策建议。
 
-## After（Layer 1–5 + C7；**不启用** Layer 7，因引言段不落 cognitive hedging）
+## After（Layer 1–5 + C7；不注入固定模板）
 
 > 工业革命以来的技术变革里，人工智能的崛起对人文学科的冲击最为直接。本文不主张以乐观或悲观定调这场转型，而是梳理近 20 年人文学界对算法治理、数据主权、机器伦理三个方向的研究，并指出当前文献的空白：缺乏跨学科的方法论整合。本文针对该空白，提出基于"批判实在论"的研究框架，结合哲学、传播学与计算机科学的方法，以案例研究的方式考察近年来欧盟 AI 监管政策对人文研究的影响。
 
@@ -126,36 +90,22 @@ Verify with:
 
 | # | Before | After | 对应规则 |
 |---|---|---|---|
-| 1 | "自工业革命以来……前所未有的技术变革" | "工业革命以来的技术变革里，人工智能的崛起对人文学科的冲击最为直接" | 病灶 A（宏大叙事） + 病灶 C（抽象主语） |
+| 1 | "自工业革命以来……前所未有的技术变革" | "工业革命以来的技术变革里，人工智能的崛起对人文学科的冲击最为直接" | 病灶 A（宏大叙事）+ 病灶 C（抽象主语） |
 | 2 | "在这样的时代背景下……不得不" | （砍空话过渡） | 病灶 A（套话过渡） |
 | 3 | "引发了广泛的关注与深刻的反思" | （砍价值判断词饱和） | 病灶 B |
 | 4 | "本文旨在探讨……并提出若干政策建议"（meta-comment） | "本文不主张……而是梳理……并指出当前文献的空白" | 病灶 F（假客观 / 元评论） |
-| 5 | （无第一人称 / 无 hedging） | **未注入**：引言段属于前置叙述，Layer 7 限定 cognitive hedging 落 Discussion / Conclusion / Limitations | Layer 7 §7.3（禁用落点） |
-
-### Layer 7 注入密度核对
-
-| 检查项 | 命中数 | 上限 | 通过？ |
-|---|---:|---|---|
-| 学术第一人称 | 0 | ≤1 | ✅ |
-| cognitive hedging | 0 | 1–3 / 千字 | ✅（0 = 注入未启用，符合引言段禁用规则） |
-| 反人味黑名单 | 0 | 0 | ✅ |
 
 ---
 
 ## 综合验证
 
 ```bash
-# 一次性跑完所有 examples（含本文件的三个示例对 + Layer 7 注入审计）
+# 一次性跑完所有 examples（红线 + 遗留防线）
 python scripts/run_examples.py
-# 期望：exit 0（PASS）或 exit 1（WARN，不阻塞）
 
-# 单文件调试：
-python scripts/validate_red_lines.py --combined --all-pairs examples/before-after-zh-academic-injection.md
-python scripts/validate_layer7_injection.py --combined examples/before-after-zh-academic-injection.md
+# 中文与英文残余 AI 味 + 句长节奏审计
+python scripts/audit_tells.py --combined examples/before-after-zh-academic-injection.md
+
+# 若作者提供了历史论文样本，用 Layer 5 风格对照脚本替代固定短语注入：
+python scripts/compare_author_style.py --sample <author_prior_paper.md> --combined examples/before-after-zh-academic-injection.md
 ```
-
-**全部退出码 ≤ 1 → Layer 7 启用下的学术注入契约成立**。
-
----
-
-*本示例仅演示 Layer 7 在不同学术段类型上的合理用法。真实写作中，请按 SKILL.md "Document-style routing" 的判定结果决定是否启用 Layer 7。*

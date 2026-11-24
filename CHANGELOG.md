@@ -4,6 +4,21 @@ All notable changes to this fork are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.7.0] — 2026-11-24
+
+### Added
+
+- `scripts/audit_tells.py`: Chinese C7 AI-tell detectors (`C7.A`–`C7.F`, with `rules-zh.md` §10 whitelist guards) and L2 sentence-length uniformity check (`L2.rhythm`: mean, variance, stdev, CV)
+- `scripts/compare_author_style.py` + `scripts/test_compare_author_style.py`: Layer 5 author-sample style comparator covering sentence rhythm, self-reference conventions, connectives, and natural hedging density
+- `scripts/validate_layer7_injection.py`: `L7.5` template-leakage guard (fails on leaked structural labels like `在 Discussion 段`, warns on >=3 stock hedging templates in one paragraph)
+- `scripts/test_repo_consistency.py`: regression test asserting `SKILL.md` frontmatter `description` stays within 1024 characters
+
+### Changed
+
+- **Layer 7 fixed-phrase injection disabled by default**: `SKILL.md`, `references/layers/layer-7-academic-injection.md`, `references/rules-zh.md` §9, `CONTEXT.md`, and `README.md` route voice calibration to Layer 5 + `scripts/compare_author_style.py` instead of inserting stock hedging/first-person templates
+- `examples/before-after-zh-academic-injection.md`: removed leaked `在 Discussion 段` labels, stock-phrase cramming, and fabricated speculations outside the source text
+- `examples/before-after-zh-academic.md`: split one compound sentence into a short sentence to restore natural sentence-length variation (`L2.rhythm`)
+
 ## [0.6.2] — 2026-10-01
 
 ### Fixed

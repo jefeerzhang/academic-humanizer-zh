@@ -275,13 +275,13 @@ Layer 2 (2.1–2.11) and Layer 6 (NSF / NIH) live in references/layers/ and load
 
 ---
 
-## §9. Layer 7 学术注入层（v0.5.0 新增，可选）
+## §9. Layer 7 学术注入层（v0.7.0 起默认停用，改用作者样本风格对照）
 
-- **路由权威**：`SKILL.md` → "Document-style routing"（何时 loaded / 何时强制启用）。
-- **密度 / 句式 / 黑名单 / 完成判据**：`references/layers/layer-7-academic-injection.md`。
-- **加载 ≠ 注入**：路由命中只解锁规则与审计器；注入仅落 Discussion / Conclusion / Limitations / 政策含义。
+- **路由权威**：`SKILL.md` → "Document-style routing"（Layer 7 固定短语注入默认停用；风格对齐改走 Layer 5 + `scripts/compare_author_style.py`）。
+- **遗留安全防线**：`references/layers/layer-7-academic-injection.md` 保留黑名单、禁区落点与元标签泄漏检查，配套 `scripts/validate_layer7_injection.py`。
+- **落点红线**：若原稿或遗留稿件已含学术留白或第一人称，仅允许出现在 Discussion / Conclusion / Limitations / 政策含义。
 
-本文件（C7）只管病灶 A–F；不再复述 Layer 7 契约。
+本文件（C7）只管病灶 A–F 与白名单；不再复述 Layer 7 契约。
 
 ---
 

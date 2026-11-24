@@ -1,27 +1,30 @@
 <!--
-Layer 7: Academic Injection Layer (学术注入层)
-Fork extension v0.5.0. Bridges natural-chinese's "破+立" 双轨 into academic-humanizer-zh,
-filtered for academic register.
+Layer 7: Academic Injection Layer (学术注入层 — v0.7.0 起默认停用固定短语注入)
+Fork extension v0.5.0; fixed-phrase injection disabled by default in v0.7.0.
 
-Scope:
-  - Loaded by SKILL.md "Document-style routing" ONLY when the input matches the
-    "学术 + 口语化摘要 / 科普段落" branch (社科 abstract、科普段、humanities introduction).
-  - Hard academic (CS/engineering paper、grant proposal) → Layer 7 does NOT activate.
+Why disabled:
+  - Injecting stock phrases ("笔者认为", "样本限制使…需谨慎对待", "目前尚不清楚")
+    introduces a new template-AI tell and tempts fabricating ungrounded limitations (C1).
+  - Voice calibration now uses Layer 5 + `scripts/compare_author_style.py` against
+    the author's own historical writing sample.
 
-This file is loaded ON DEMAND. Do not edit SKILL.md or rules-zh.md contracts because of it.
+This file remains as a legacy safety-guard reference (blacklists, forbidden sections,
+meta-label leak checks) for `scripts/validate_layer7_injection.py`.
 -->
 
-# Layer 7 · 学术注入层（Academic Injection Layer）
+# Layer 7 · 学术注入层（v0.7.0 起默认停用固定短语注入）
 
-> **一句话**：本层只引入 `natural-chinese` 的「破+立双轨」里**学术场景合规**的子集——「认知边界留白」与「第一人称限密度」——其余人味工具在学术场景下保持关闭。**C0–C2 红线不动**。
+> **当前状态（v0.7.0）**：**默认停用固定短语注入**。向稿件塞入「笔者认为 / 样本限制使……需谨慎对待 / 目前尚不清楚」等固定短语会制造新的模板 AI 味，且容易编造原稿没有的解释与局限（违反 C1）。
+> **替代方案**：按 `SKILL.md` Layer 5，用作者真实历史论文或草稿作为样本，运行 `scripts/compare_author_style.py` 对齐句长节奏、自称体系、连接词与自然限定密度。
+> **本文档保留用途**：仅作为遗留稿件或显式审计时的安全防线（黑名单、禁区落点、元标签泄漏检查），配套 `scripts/validate_layer7_injection.py`。**C0–C2 红线始终最高优先级**。
 
 ---
 
-## 7.0 何时启用
+## 7.0 状态与路由
 
-路由决策由 `SKILL.md` 的 "Document-style routing" 单一权威（一张表覆盖硬学术标志、grant 标志、口语化学术段、用户口头触发）。**Layer 7 加载 ≠ 注入**：路由命中只解锁规则与审计器；注入（hedging / 第一人称）按 §7.2 密度上限与 §7.3 句式库的落点限制执行。
+路由决策以 `SKILL.md` 的 "Document-style routing" 为单一权威：默认不再自动加载或触发固定短语注入。作者提供历史样本时，一律走 Layer 5 + `scripts/compare_author_style.py`。
 
-**正交关系**：Layer 7 与 Layer 5（voice/venue matching）正交——Layer 5 是 venue 适配，Layer 7 是 venue 之内的"立人味"工具。
+仅当需要审计遗留稿件或检查是否存在不当注入时，按以下规则运行 `scripts/validate_layer7_injection.py`：若稿件中已存在学术留白或第一人称，必须限定在 `Discussion / Conclusion / Limitations / 政策含义`，且不得出现正文元标签泄漏（如「在 Discussion 段，」）或单段堆砌固定句式。
 
 ---
 
@@ -120,18 +123,21 @@ This file is loaded ON DEMAND. Do not edit SKILL.md or rules-zh.md contracts bec
 - [ ] 全文未出现「我认为 / 我觉得 / 我感觉」等口语第一人称
 - [ ] 全文未出现 emoji、未出现小红书体、未出现口语强化封闭词表（挺好 / 挺多 / 挺不错 / 挺不好 / 蛮好 / 蛮不错 / 蛮不好）
 - [ ] C0–C2 红线（数字、引用、命名术语）一字未动
+- [ ] 正文未泄漏结构元标签（如「在 Discussion 段，」），单段未堆砌 ≥3 条固定模板句式
 - [ ] 跑 `scripts/validate_red_lines.py` 退出码 0（C0–C2 兜底）
-- [ ] 跑 `scripts/validate_layer7_injection.py` 退出码 0（注入密度审计）
+- [ ] 跑 `scripts/validate_layer7_injection.py` 退出码 0（遗留注入安全防线）
+- [ ] 提供作者样本时，跑 `scripts/compare_author_style.py` 对齐句长节奏、自称与连接词
 
-**自动化审计**：`scripts/validate_layer7_injection.py` 对 before/after 对做 5 类检测：
+**自动化审计**：`scripts/validate_layer7_injection.py` 对 before/after 对做 6 类防线检测：
 
 1. 第一人称计数（≤1）
-2. cognitive hedging 密度（≤3 处/千字，建议 1–3）
+2. cognitive hedging 密度（≤3 处/千字）
 3. 反人味陷阱黑名单命中（应为 0）
-4. cognitive hedging 落点（仅 Discussion/Conclusion/Limitations/政策含义）
+4. cognitive hedging 落点（仅 Discussion / Conclusion / Limitations / 政策含义）
 5. C0–C2 红线委托 `validate_red_lines.py` 跑（退出码 0）
+6. 模板泄漏防线（L7.5：禁止「在 Discussion 段」类标签泄漏进正文，警告单段堆砌 ≥3 条固定句式）
 
-退出码：0 = PASS；1 = WARN（hedge 密度超标但未污染禁用段）；2 = FAIL（第一人称滥用 / hedge 落禁用段 / 黑名单 / C0–C2 红线破）。
+退出码：0 = PASS（含默认未激活跳过）；1 = WARN（密度或模板堆砌警告）；2 = FAIL（第一人称滥用 / hedge 落禁用段 / 黑名单 / 元标签泄漏 / C0–C2 红线破）。
 
 ---
 

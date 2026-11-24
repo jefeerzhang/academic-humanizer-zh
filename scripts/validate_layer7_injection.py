@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-validate_layer7_injection.py — Academic Humanizer Layer 7 injection auditor.
+validate_layer7_injection.py — Legacy guard auditor for Layer 7 fixed-phrase injection.
 
-Companion to validate_red_lines.py. Layer 7 (Academic Injection Layer) is
-an *additive* layer that allows "cognitive hedging" + "first-person
-limiting density" in academic prose; this auditor checks the AFTER text
-honors the Layer 7 contract:
+As of v0.7.0, fixed-phrase Layer 7 injection is DISABLED by default because
+injecting stock hedging phrases ("笔者认为", "样本限制使…需谨慎对待") introduces
+a new template-AI tell and risks inventing ungrounded claims (C1). For voice
+calibration, use Layer 5 + `scripts/compare_author_style.py` against the author's
+own prior papers instead.
+
+This script remains as a safety guard when auditing legacy drafts or explicitly
+forced runs:
 
   L7.1  First-person count <= 1 (academic: 笔者认为 / 本研究倾向于 /
         我们倾向于), and ONLY in Discussion / Conclusion / Limitations.
@@ -15,6 +19,8 @@ honors the Layer 7 contract:
   L7.3  Anti-human-trap blacklist must have 0 hits (no emoji, no
         小红书体, no 口语第一人称 我觉得/我认为).
   L7.4  Delegates C0–C2 red lines to validate_red_lines.py (exit 0).
+  L7.5  Template leakage guard: FAIL on leaked meta-labels ("在 Discussion 段");
+        WARN on >=3 stock hedging templates crammed into a single paragraph.
 
 Usage:
     python3 scripts/validate_layer7_injection.py before.md after.md
@@ -22,9 +28,9 @@ Usage:
     python3 scripts/validate_layer7_injection.py --combined --all-pairs example.md
 
 Exit codes:
-    0  PASS  — Layer 7 contract honored
-    1  WARN  — soft warning (hedge density outside suggested range)
-    2  FAIL  — Layer 7 violation (first-person abuse, hedge in Results, blacklist hit)
+    0  PASS  — Layer 7 guard honored (or skipped because inactive)
+    1  WARN  — soft warning (hedge density outside suggested range or template cramming)
+    2  FAIL  — Layer 7 violation (first-person abuse, hedge in Results, blacklist hit, meta-label leak)
 """
 
 from __future__ import annotations
@@ -83,6 +89,11 @@ BLACKLIST_PATTERNS = [
     r"挺(?:好|多|不错|不好)|蛮(?:好|不错|不好)",
 ]
 BLACKLIST_RE = re.compile("|".join(BLACKLIST_PATTERNS))
+
+META_LEAK_RE = re.compile(
+    r"在\s*(?:Discussion|Conclusion|Limitations?)\s*段[，,:：]?",
+    re.IGNORECASE,
+)
 
 SECTION_HEADER_RE = re.compile(
     r"^#{1,6}\s*(?:\d+\.?\s*)?"
@@ -348,6 +359,32 @@ def check_blacklist(after: str) -> list[Finding]:
     return findings
 
 
+def check_template_leakage(after: str) -> list[Finding]:
+    """Catch leaked structural meta-labels and single-paragraph template cramming."""
+    findings: list[Finding] = []
+    for m in META_LEAK_RE.finditer(after):
+        if _is_skippable_context(after, m.start()):
+            continue
+        line_no = after[: m.start()].count("\n") + 1
+        findings.append(Finding(
+            severity="FAIL", rule="L7.5",
+            message=f"正文泄漏提示词结构标签 '{m.group(0)}'；请删去该标签并改用自然段落衔接。",
+            location=f"line {line_no}", evidence=m.group(0),
+        ))
+    for para in re.split(r"\n\s*\n", after):
+        stripped = para.lstrip()
+        if not stripped or stripped.startswith("|") or stripped.startswith("```"):
+            continue
+        hits = [m.group(0) for m in HEDGING_RE.finditer(para)]
+        if len(hits) >= 3:
+            findings.append(Finding(
+                severity="WARN", rule="L7.5",
+                message=f"单段堆砌 {len(hits)} 条固定留白句式，易产生新模板味；建议停用固定注入并改用 compare_author_style.py 对齐作者样本。",
+                location="单段", evidence=" / ".join(hits[:4]),
+            ))
+    return findings
+
+
 def detect_layer7_active(before: str, after: str) -> bool:
     text = before + "\n" + after
     if any(m in text for m in LAYER7_ACTIVATION_MARKERS):
@@ -369,7 +406,7 @@ def audit_pair(before: str, after: str, *, force: bool, no_red_line: bool) -> Re
     if not force and not detect_layer7_active(before, after):
         report.findings.append(Finding(
             severity="INFO", rule="L7.0",
-            message="未检测到 Layer 7 启用标记。默认 Layer 7 未激活，跳过审计（用 --force 强制审计）。",
+            message="Layer 7 固定短语注入默认停用，未检测到注入痕迹，跳过审计（风格对齐请使用 scripts/compare_author_style.py）。",
         ))
         return report
 
@@ -385,6 +422,7 @@ def audit_pair(before: str, after: str, *, force: bool, no_red_line: bool) -> Re
     report.hedge_per_1k = round(density, 2)
 
     report.findings.extend(check_blacklist(after))
+    report.findings.extend(check_template_leakage(after))
 
     if not no_red_line and before:
         script = Path(__file__).parent / "validate_red_lines.py"

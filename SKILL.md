@@ -1,6 +1,6 @@
 ---
 name: academic-humanizer-zh
-version: 0.6.2
+version: 0.7.0
 description: |
   Edit AI-assisted academic prose (papers, theses, rebuttals, reviews) and grant
   proposals (NSF Summary/Description, NIH Specific Aims, fellowships) so each claim
@@ -9,11 +9,10 @@ description: |
   methods/metrics. Not for blogs, marketing, personal essays, or evading AI-use
   disclosure.
 
-  Bridges to sibling `natural-chinese` for the "破+立双轨" injection layer
-  (Layer 7: cognitive hedging + first-person density limiting) for social-science
-  abstracts / humanities intros / 科普段落 only. C0–C2 red lines dominate.
-  Non-academic Chinese prose (公众号 / 公文 / 商业 / 新闻 / 文学) defers
-  to `natural-chinese`.
+  Uses Layer 5 author-sample style comparison (`scripts/compare_author_style.py`) for
+  voice calibration instead of fixed-phrase Layer 7 injection (disabled by default).
+  C0–C2 red lines dominate. Non-academic Chinese prose (公众号 / 公文 / 商业 / 新闻 / 文学)
+  defers to sibling `natural-chinese`.
 
   TRIGGER: "润色论文" / "润色一下" / "改写学术稿" / "去 AI 味"
   / "academic humanizer" / "polish manuscript" / "edit my draft" / "match my voice"
@@ -27,7 +26,7 @@ metadata:
   sibling_skills:
     - name: natural-chinese
       url: https://github.com/jefeerzhang/natural-chinese
-      role: provides the "破+立" 双轨 methodology; Layer 7 borrows the academic-filtered subset
+      role: handles non-academic Chinese prose (公众号 / 公文 / 商业 / 新闻 / 文学)
 ---
 
 # Academic Humanizer
@@ -41,10 +40,13 @@ every number, result, and citation; not a tool for evading AI-use disclosure.
 Editing or reviewing academic prose: paper sections, abstracts, rebuttals, related work,
 and **funding proposals** (NSF, NIH Specific Aims, fellowship / foundation proposals;
 see Layer 6). **Not** for blogs, marketing, or personal essays. Do **not** inject
-colloquial first-person voice (`我觉得`, humor, emoji personality) into a manuscript;
-preserve whitelisted scholarly `we` / `本研究`, and apply Layer 7's ≤1 academic hedge-person
-(`笔者认为`) only in Discussion / Conclusion / Limitations / 政策含义 when Layer 7
-injection is active. For technical writing, neutral and precise *is* the human voice.
+colloquial first-person voice (`我觉得`, humor, emoji personality) or stock hedging
+templates (`笔者认为`, `样本限制使…需谨慎对待`) into a manuscript. Fixed-phrase
+Layer 7 injection is **disabled by default**; preserve whitelisted scholarly `we` / `本研究`,
+and calibrate voice against the author's own prior writing sample via Layer 5
+(`scripts/compare_author_style.py`). If auditing a legacy draft with Layer 7 enabled,
+restrict academic hedging to Discussion / Conclusion / Limitations / 政策含义 only.
+For technical writing, neutral and precise *is* the human voice.
 Proposals have a different register from papers — ambition language a paper would trim is
 appropriate there; apply Layer 6, not the paper layers' stricter trimming, to vision statements.
 
@@ -58,38 +60,43 @@ casualizing, and (2) enforce the discipline a general humanizer misses:
 ## Process
 
 1. **Read** the manuscript and any author writing sample; note the document type
-   (paper vs. proposal) and the target venue or funding agency. For proposals, also apply
+   (paper vs. proposal) and the target venue or funding agency. When the author supplies
+   a prior paper or writing sample, extract its baseline first with
+   `scripts/compare_author_style.py --sample <sample> --profile-only` (sentence rhythm,
+   self-reference convention, connectives, hedging density). For proposals, also apply
    Layer 6 and preserve appropriate vision.
 2. **Audit** (do not edit yet): list each detected pattern with its location and proposed
    fix, and each empirical claim's evidence status. Prefer **strong** Layer 1 tells first
    (see `references/layers/layer-1-general-tells.md` Strength); *weak alone* patterns need
-   company in the same passage. Look at **paragraph shape** as well as sentences. If the
-   document-style signature routes to **Layer 7** (Academic Injection, see
-   "Document-style routing"), also write the injection plan: cognitive hedging + ≤1
-   academic first-person, **only** in the Discussion / Conclusion / Limitations / 政策含义
-   sections.
+   company in the same passage. Look at **paragraph shape** and **sentence-length
+   variation** as well as sentences. Do **not** draft a fixed-phrase Layer 7 injection
+   plan (disabled by default; never invent new limitations or speculations to add hedging).
 3. **Rewrite**: same structure and content, all claims and citations preserved, tells
-   removed, over-claims matched to evidence, legitimate hedging kept. When Layer 7 is
-   active, inject cognitive hedging / academic first-person **only** in Discussion /
-   Conclusion / Limitations / 政策含义 — **never** in the abstract, Methods, Results, or
-   引言. Before rewriting, read `examples/before-after-zh-academic.md` to calibrate edit
-   strength and output format (English prose: `examples/before-after.md`). When Layer 7 is
-   loaded, also read `examples/before-after-zh-academic-injection.md` for injection
-   density and landing-zone calibration. After a draft, re-check tells that often survive
-   a first pass: negative parallelisms (1.7), one-line closers (1.19), rule-of-three (1.8),
-   em dashes (1.17).
+   removed, over-claims matched to evidence, legitimate hedging kept. Match sentence
+   rhythm, self-reference (`本文` / `本研究` / `we`), and connective habits to the
+   author's sample when provided. Before rewriting, read
+   `examples/before-after-zh-academic.md` to calibrate edit strength and output format
+   (English prose: `examples/before-after.md`). Only when auditing legacy Layer 7 drafts,
+   read `examples/before-after-zh-academic-injection.md` for boundary reference. After a
+   draft, re-check tells that often survive a first pass: negative parallelisms (1.7),
+   one-line closers (1.19), rule-of-three (1.8), em dashes (1.17), and flat sentence
+   rhythm (L2.rhythm).
 4. **Report**: cleaned text plus a short change log + a **diff** + an **unchanged-claim
-   declaration**. Cover everything the original covered. When Layer 7 was active, run
-   `scripts/validate_layer7_injection.py` on the before/after pair and report its exit
-   code (0 = PASS / 1 = WARN / 2 = FAIL for first-person abuse, hedge in forbidden
-   section, blacklist hit, or delegated C0–C2 red-line break); CI wraps the same check via
-   `.github/workflows/audit.yml`. Whenever an edit is finalized, also run
-   `scripts/audit_tells.py` on the result (`--combined` on the before/after file, or
-   `--after` on the cleaned text) and report its exit code and any residual Layer 1
-   pattern hits in the change log; if exit ≥ 1 (WARN / FAIL), revise the residual tells
-   before finalizing. **Completion:** every numbered item 1–4 is present, the
-   unchanged-claim declaration is explicit on each C0/C1/C2 category — not just a
-   blanket "no changes" — and the `audit_tells.py` exit code is reported.
+   declaration**. Cover everything the original covered. Whenever an edit is finalized:
+   - Run `scripts/audit_tells.py` on the result (`--combined` on the before/after file, or
+     `--after` on the cleaned text; scans Layer 1 English tells, C7 Chinese A–F tells, and
+     L2 sentence-length uniformity) and report its exit code; if exit ≥ 1 (WARN / FAIL),
+     revise the residual tells before finalizing.
+   - When an author sample was supplied, run
+     `scripts/compare_author_style.py --sample <sample> --after <cleaned>` and report its
+     exit code (0 = PASS / 1 = WARN on rhythm, self-reference, connective, or hedging drift).
+   - If auditing a legacy draft with Layer 7 markers, run
+     `scripts/validate_layer7_injection.py` and report its exit code (0 = PASS / 1 = WARN /
+     2 = FAIL for first-person abuse, forbidden-section hedge, blacklist hit, meta-label
+     leak, or C0–C2 red-line break).
+   **Completion:** every numbered item 1–4 is present, the unchanged-claim declaration is
+   explicit on each C0/C1/C2 category — not just a blanket "no changes" — and the
+   `audit_tells.py` exit code is reported.
 
 ---
 
@@ -128,19 +135,19 @@ should not be re-routed to the Chinese ruleset):
 
 ---
 
-## Document-style routing (academic-injection activation)
+## Document-style routing (voice calibration & legacy Layer 7)
 
 Beyond language, route by **document style** — the layer that should run.
 
 | Input signature | Routes to |
 |---|---|
-| Hard academic markers (`\cite{}` / `\citep{}` / `\begin{equation}` / `p < 0.0x` / `n = xxx` / `.bib` pointer) | **Layer 1–6 + C7** (full academic pass); **Layer 7 NOT activated** |
-| Grant proposal markers (NIH Aims / NSF Project Summary / fellowship structure) | **Layer 1–6 + Layer 6 grant mode + C7**; **Layer 7 NOT activated** |
-| Continuous Chinese paragraph(s) with academic cues ("摘要" / "本文提出" / "研究表明" / "研究方法" / "政策含义") but **no** hard-academic markers | **Layer 1–5 + C7 + Layer 7 loaded** — cognitive hedging + first-person limiting **inject only in Discussion / Conclusion / Limitations / 政策含义**; intro/摘要 get C7 cleanup only |
-| User explicitly says "摘要松一松" / "科普段落自然化" / "不要太死板" | **Force-activate Layer 7**, regardless of auto-detection |
+| Hard academic markers (`\cite{}` / `\citep{}` / `\begin{equation}` / `p < 0.0x` / `n = xxx` / `.bib` pointer) | **Layer 1–5 + C7** (full academic pass); **Layer 7 disabled** |
+| Grant proposal markers (NIH Aims / NSF Project Summary / fellowship structure) | **Layer 1–6 + C7** (grant mode); **Layer 7 disabled** |
+| Author supplies prior paper / writing sample (any academic genre, or user asks "摘要松一松" / "科普段落自然化" / "match my voice") | **Layer 1–5 + C7 + `scripts/compare_author_style.py`** — calibrate sentence rhythm, self-reference, connectives, and natural hedging to the author's own sample |
+| Continuous Chinese academic prose without an author sample | **Layer 1–5 + C7** — clean A–F tells and vary sentence rhythm; **do NOT inject stock Layer 7 phrases** |
 | Non-academic Chinese (公众号 / 公文 / 商业 / 新闻 / 文学) | **Defer to sibling skill [`natural-chinese`](https://github.com/jefeerzhang/natural-chinese)** — this skill does not edit |
 
-Layer 7 is **additive, never substitutive**: C0–C2 red lines run first, C4–C5 are not loosened, only cognitive hedging + first-person limiting activate. Density caps and forbidden-section rules live in `references/layers/layer-7-academic-injection.md`; the executable check is `scripts/validate_layer7_injection.py` (exit 0/1/2; CI runs it in `.github/workflows/audit.yml`).
+**Why Layer 7 fixed-phrase injection is disabled by default (v0.7.0):** injecting stock phrases (`笔者认为`, `样本限制使…需谨慎对待`, `目前尚不清楚`) creates a new template-AI tell and risks inventing limitations absent from the source (violating C1). `references/layers/layer-7-academic-injection.md` and `scripts/validate_layer7_injection.py` remain as a legacy safety guard (exit 0/1/2; forbids meta-label leaks, blacklist hits, and hedging outside Discussion / Conclusion / Limitations / 政策含义).
 
 ---
 
@@ -234,14 +241,19 @@ pointer** (`Table 2`, `Figure 3`), never fabricate a magnitude.
 
 ---
 
-## Layer 5: Voice and venue matching
+## Layer 5: Voice and venue matching (author-sample calibration)
 
-If the author supplies prior papers, read a sample first and note sentence rhythm,
-connective habits, level and placement of hedging, how they open sections, notation, and
-recurring phrasings, then match them. Match the venue's register too (e.g., ICLR /
-NeurIPS: terse, direct, results-forward; Nature / PNAS: more expository). Absent a
-sample, default to clean, precise, venue-appropriate prose, not the casual, opinionated
-voice of a general-purpose humanizer.
+Voice calibration replaces fixed-phrase injection. When the author supplies prior papers
+or drafts, run `scripts/compare_author_style.py --sample <sample> --profile-only` before
+rewriting to measure their actual baseline across four dimensions: (1) sentence-length
+mean, standard deviation, and CV (short/long mix); (2) self-reference convention
+(`本文` / `本研究` / `笔者` / `我们` or `we` / `this paper`); (3) connective vocabulary
+and density; (4) natural hedging and punctuation habits. After rewriting, run
+`scripts/compare_author_style.py --sample <sample> --after <cleaned>` (exit 0 = aligned,
+1 = drift warning) and fix flagged drifts (e.g., flattened rhythm or foreign connectives).
+Match the venue's register too (e.g., ICLR / NeurIPS: terse, direct, results-forward;
+Nature / PNAS: more expository). Absent a sample, default to clean, precise,
+venue-appropriate prose without injecting stock first-person or hedging templates.
 
 ---
 

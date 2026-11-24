@@ -137,6 +137,20 @@ class TestBlacklist(unittest.TestCase):
         fails = [f for f in findings if f.severity == "FAIL"]
         self.assertTrue(any("§引言" in f.message for f in fails))
 
+    def test_meta_label_leak_fails_l7_5(self):
+        after = "在 Discussion 段，笔者认为结论仅适用于局部样本。"
+        report = audit_pair("", after, force=True, no_red_line=True)
+        self.assertEqual(report.exit_code(), 2)
+        self.assertTrue(any(f.rule == "L7.5" and f.severity == "FAIL" for f in report.findings))
+
+    def test_single_paragraph_template_cramming_warns_l7_5(self):
+        after = (
+            "## Discussion\n"
+            "目前尚不清楚作用机制；样本限制使推广需谨慎对待；这一发现有待跨地区验证。"
+        )
+        report = audit_pair("", after, force=True, no_red_line=True)
+        self.assertTrue(any(f.rule == "L7.5" and f.severity == "WARN" for f in report.findings))
+
 
 class TestCombinedIntegration(unittest.TestCase):
     def test_injection_example_meta_excluded(self):
